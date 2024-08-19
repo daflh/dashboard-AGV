@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { RouterView } from "vue-router";
-import Header from "./components/Header.vue";
 
 // Reactive reference to store scroll position
 const scrollY = ref(0);
@@ -22,9 +21,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Header />
   <RouterView />
-  <!-- <Footer /> -->
 </template>
 
 <style>

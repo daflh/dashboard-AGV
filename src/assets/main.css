@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply font-sans;
+}
+
 /* @font-face {
   font-display: swap;
   font-family: 'VAG Rounded Next';

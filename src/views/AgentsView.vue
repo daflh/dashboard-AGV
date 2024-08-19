@@ -1,17 +1,71 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { reactive } from 'vue'
+import Button from 'primevue/button'
+import UserLayout from '@/components/UserLayout.vue'
+import SearchFilter from '@/components/pages/Agents/SearchFilter.vue'
+import AgentCard from '@/components/pages/Agents/AgentCard.vue'
 
-const router = useRouter()
-
-function logout() {
-  localStorage.removeItem('isLoggedIn')
-  router.push('/login')
-}
+const agentsData = reactive([
+  {
+    name: 'amr1',
+    currentTask: 'Apa hayoo',
+    status: 'active',
+    battery: 100,
+    signal: 80,
+    hsm: true
+  },
+  {
+    name: 'amr_new',
+    currentTask: 'Apa hayoo',
+    status: 'idle',
+    battery: 90,
+    signal: 100,
+    hsm: true
+  },
+  {
+    name: 'amr3_blue',
+    currentTask: 'Apa hayoo',
+    status: 'offline',
+    battery: 18,
+    signal: 5,
+    hsm: false
+  },
+  {
+    name: 'amr4',
+    currentTask: 'Apa hayoo',
+    status: 'active',
+    battery: 100,
+    signal: 100,
+    hsm: true
+  },
+  {
+    name: 'amr_2021',
+    currentTask: 'Apa hayoo',
+    status: 'offline',
+    battery: 100,
+    signal: 100,
+    hsm: false
+  }
+])
 
 </script>
 
 <template>
-  <div class="flex m-4">
-    <button class="text-blue" @click="logout">Logout</button>
-  </div>
+  <UserLayout>
+    <div class="container mx-auto py-8 px-20">
+      <div class="flex justify-between mb-7">
+        <SearchFilter />
+        <div>
+          <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primary" />
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-6 justify-center">
+        <AgentCard
+          v-for="agent of agentsData"
+          :key="agent.name"
+          :agent="agent"
+        />
+      </div>
+    </div>
+  </UserLayout>
 </template>
