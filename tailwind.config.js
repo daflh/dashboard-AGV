@@ -14,12 +14,7 @@ module.exports = {
         12: '4rem'
       },
       colors: {
-        softred: '#eb5f61', // ocean blue (primary)
-        darkcornflowerblue: '#263e7c', // dark blue (primary)
-        lavenderblue: '#ccdafc', // subtle blue (primary)
-        aliceblue: '#eef8fc',
-        softgray: '#F9F9F9',
-        primarygreen: '#1D5966',
+        red : '#DA0101',
         secondarygreen: '#497E8A',
         blue: '#000066'
       }

@@ -16,8 +16,10 @@ function submitForm() {
     <!-- Left Side -->
     <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8">
       <div class="max-w-md w-full">
-        <div class="flex items-center mb-8">
-          <div class="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+        <div class="flex items-center mb-2">
+          <div class="w-12 h-12 rounded-full mr-4">
+              <h1 class="text-blue font-bold">LOGO</h1>
+          </div>
           <!-- <span class="text-2xl font-bold text-gray-800">Sem<span class="text-blue">Barang</span></span> -->
         </div>
         <h2 class="text-3xl font-bold mb-2 text-center">
@@ -51,14 +53,14 @@ function submitForm() {
               <input id="remember" type="checkbox" class="mr-2" />
               <label for="remember" class="text-gray-700">Remember Me</label>
             </div>
-            <a href="#" class="text-blue text-sm">Forgot Password</a>
+            <!-- <a href="#" class="text-blue text-sm">Forgot Password</a> -->
           </div>
           <button type="submit" class="w-full bg-blue text-white p-2 rounded">
             Log In
           </button>
         </form>
         <p class="text-gray-700 text-center mt-4">
-          Already have an account? <a href="/dashboard" class="text-blue">Log In</a>
+          Already have an account? <a href="/status" class="text-blue">Log In</a>
         </p>
       </div>
     </div>
