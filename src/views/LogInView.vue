@@ -1,3 +1,16 @@
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function submitForm() {
+  // Tambahkan logika pengiriman formulir di sini
+  localStorage.setItem('isLoggedIn', 'true')
+  router.push('/')
+}
+
+</script>
+
 <template>
   <div class="flex h-screen">
     <!-- Left Side -->
@@ -66,16 +79,3 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
-
-export default defineComponent({
-  name: "SignUp",
-  methods: {
-    submitForm() {
-      // Tambahkan logika pengiriman formulir di sini
-      alert("Form submitted");
-    },
-  },
-});
-</script>
