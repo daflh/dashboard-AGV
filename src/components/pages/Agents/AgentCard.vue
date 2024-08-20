@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AgentStatus from './AgentStatus.vue'
+
 defineProps({
   agent: {
     type: Object,
@@ -9,10 +11,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="px-5 py-4 shadow-md rounded-md w-72">
+  <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 w-[20rem]">
     <div class="flex justify-between mb-1">
       <div class="text-lg font-medium">{{ agent.name }}</div>
-      <div>{{ agent.status }}</div>
+      <AgentStatus :status="agent.status" />
     </div>
     <div class="text-slate-700">
       {{ agent.currentTask }}
@@ -40,6 +42,3 @@ defineProps({
     </div>
   </div>
 </template>
-
-<style scoped>
-</style>

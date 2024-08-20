@@ -16,11 +16,14 @@ const selectedFilter = ref('');
   <div class="flex space-x-5">
     <IconField class="drop-shadow">
       <InputIcon class="pi pi-search" />
-      <InputText v-model="searchValue" placeholder="Search agents" class="w-56" />
+      <InputText v-model="searchValue" placeholder="Search agents" class="w-[15rem]" />
     </IconField>
-    <SelectButton v-model="selectedFilter" :options="filterOptions" aria-labelledby="basic" />
+    <SelectButton
+      v-model="selectedFilter"
+      :options="filterOptions"
+      pt:root="space-x-2 [&>button]:!border-0 [&>button]:!rounded-lg"
+      aria-labelledby="basic"
+      multiple
+    />
   </div>
 </template>
-
-<style scoped>
-</style>

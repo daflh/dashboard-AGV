@@ -8,7 +8,7 @@ import AgentCard from '@/components/pages/Agents/AgentCard.vue'
 const agentsData = reactive([
   {
     name: 'amr1',
-    currentTask: 'Apa hayoo',
+    currentTask: 'Status robot',
     status: 'active',
     battery: 100,
     signal: 80,
@@ -16,7 +16,7 @@ const agentsData = reactive([
   },
   {
     name: 'amr_new',
-    currentTask: 'Apa hayoo',
+    currentTask: 'Status robot',
     status: 'idle',
     battery: 90,
     signal: 100,
@@ -24,7 +24,7 @@ const agentsData = reactive([
   },
   {
     name: 'amr3_blue',
-    currentTask: 'Apa hayoo',
+    currentTask: 'Status robot',
     status: 'offline',
     battery: 18,
     signal: 5,
@@ -32,7 +32,7 @@ const agentsData = reactive([
   },
   {
     name: 'amr4',
-    currentTask: 'Apa hayoo',
+    currentTask: 'Status robot',
     status: 'active',
     battery: 100,
     signal: 100,
@@ -40,7 +40,7 @@ const agentsData = reactive([
   },
   {
     name: 'amr_2021',
-    currentTask: 'Apa hayoo',
+    currentTask: 'Status robot',
     status: 'offline',
     battery: 100,
     signal: 100,

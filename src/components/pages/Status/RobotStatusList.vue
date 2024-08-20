@@ -11,7 +11,7 @@
       :key="index"
       class="flex-col justify-center w-72 h-96 bg-white shadow-md mx-auto p-4 mt-8 rounded-lg"
     >
-      <h1 class="font-semibold text-2xl text-blue text-center">{{ robot.name }}</h1>
+      <h1 class="font-semibold text-2xl text-primaryblue text-center">{{ robot.name }}</h1>
       <div class="text-center mt-4">
         <v-progress-circular
           :model-value="robot.value"
@@ -19,10 +19,10 @@
           :size="100"
           :width="9"
           class="v-progress-circular"
-          :class="robot.value <= 20 ? 'text-red' : 'text-blue'"
+          :class="robot.value <= 20 ? 'text-red' : 'text-primaryblue'"
         >
           <template v-slot:default>
-            <span class="font-semibold text-blue-500"> {{ robot.value }}% </span>
+            <span class="font-semibold text-primaryblue-500"> {{ robot.value }}% </span>
           </template>
         </v-progress-circular>
       </div>
@@ -30,15 +30,15 @@
       <!-- Roll, Pitch, Yaw -->
       <div class="mt-6">
         <div class="flex justify-between w-full px-4">
-          <h2 class="font-semibold text-blue">Roll</h2>
-          <h2 class="font-semibold text-blue">Pitch</h2>
-          <h2 class="font-semibold text-blue">Yaw</h2>
+          <h2 class="font-semibold text-primaryblue">Roll</h2>
+          <h2 class="font-semibold text-primaryblue">Pitch</h2>
+          <h2 class="font-semibold text-primaryblue">Yaw</h2>
         </div>
         <div class="border-t-2 border-gray-300 mt-2 mb-1 w-full"></div>
         <div class="flex justify-between w-full px-4">
-          <p class="font-semibold text-blue mt-1">{{ robot.roll }}°</p>
-          <p class="font-semibold text-blue mt-1">{{ robot.pitch }}°</p>
-          <p class="font-semibold text-blue mt-1">{{ robot.yaw }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ robot.roll }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ robot.pitch }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ robot.yaw }}°</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@
             alt="Signal Icon"
             class="h-8 mx-auto"
           />
-          <p class="font-semibold text-blue">Signal</p>
+          <p class="font-semibold text-primaryblue">Signal</p>
         </div>
         <div class="text-center">
           <img
@@ -58,11 +58,11 @@
             alt="Status-card Icon"
             class="h-8 mx-auto"
           />
-          <p class="font-semibold text-blue">Status</p>
+          <p class="font-semibold text-primaryblue">Status</p>
         </div>
         <div class="text-center">
-          <h2 class="font-bold text-2xl text-blue">{{ robot.health }}H</h2>
-          <p class="font-semibold text-blue">Health</p>
+          <h2 class="font-bold text-2xl text-primaryblue">{{ robot.health }}H</h2>
+          <p class="font-semibold text-primaryblue">Health</p>
         </div>
       </div>
     </div>
