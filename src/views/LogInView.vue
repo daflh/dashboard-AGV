@@ -16,19 +16,15 @@ function submitForm() {
     <!-- Left Side -->
     <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8">
       <div class="max-w-md w-full">
-        <div class="flex items-center mb-2">
-          <div class="w-12 h-12 rounded-full mr-4">
-              <h1 class="text-primaryblue font-bold">LOGO</h1>
+        <div class="flex items-center mb-6">
+          <div class="text-xl text-primaryblue italic cursor-default">
+            <span class="font-medium">Logo</span>
+            <span class="font-semibold">Produk</span>
           </div>
-          <!-- <span class="text-2xl font-bold text-gray-800">Sem<span class="text-primaryblue">Barang</span></span> -->
         </div>
-        <h2 class="text-3xl font-bold mb-2 text-center">
-          Stechoq AGV Dashboard
+        <h2 class="text-3xl font-bold mb-7 text-center">
+          Stechoq AMR Dashboard
         </h2>
-        <p class="text-gray-600 mb-8 font-productsans text-center">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua.
-        </p>
         <form @submit.prevent="submitForm">
           <div class="mb-4">
             <label class="block text-gray-700" for="name">Username</label>
@@ -55,18 +51,15 @@ function submitForm() {
             </div>
             <!-- <a href="#" class="text-primaryblue text-sm">Forgot Password</a> -->
           </div>
-          <button type="submit" class="w-full bg-blue text-white p-2 rounded">
+          <button type="submit" class="w-full bg-primaryblue text-white p-2 rounded">
             Log In
           </button>
         </form>
-        <p class="text-gray-700 text-center mt-4">
-          Already have an account? <a href="/status" class="text-primaryblue">Log In</a>
-        </p>
       </div>
     </div>
     <!-- Right Side -->
     <div
-      class="hidden lg:flex lg:w-1/2 bg-blue text-white justify-left items-center p-20"
+      class="hidden lg:flex lg:w-1/2 bg-primaryblue text-white justify-left items-center p-20"
     >
       <div class="max-w-full">
         <h2 class="text-3xl font-bold mb-2 text-left w-3/4">

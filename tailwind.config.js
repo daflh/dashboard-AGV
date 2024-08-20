@@ -14,10 +14,7 @@ export default {
         12: '4rem'
       },
       colors: {
-        primary: '#000066',
-        secondary: '#D6D6EE',
         primaryred : '#DA0101',
-        secondarygreen: '#497E8A',
         primaryblue: '#000066'
       }
     }

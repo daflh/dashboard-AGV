@@ -2,7 +2,7 @@
   <div class="flex justify-between py-8 px-20">
     <SearchFilter />
     <div>
-      <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primary" />
+      <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
     </div>
   </div>
   <div class="flex justify-center mx-10 flex-wrap gap-x-4">
@@ -19,7 +19,7 @@
           :size="100"
           :width="9"
           class="v-progress-circular"
-          :class="robot.value <= 20 ? 'text-red' : 'text-primaryblue'"
+          :class="robot.value <= 20 ? 'text-primaryred' : 'text-primaryblue'"
         >
           <template v-slot:default>
             <span class="font-semibold text-primaryblue-500"> {{ robot.value }}% </span>
@@ -121,7 +121,7 @@ const robots = ref([
 let intervals: ReturnType<typeof setInterval>[] = [];
 
 onMounted(() => {
-  robots.value.forEach((robot, index) => {
+  robots.value.forEach((robot) => {
     const interval = setInterval(() => {
       if (robot.value <= 0) {
         robot.value = 100;

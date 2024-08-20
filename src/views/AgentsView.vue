@@ -56,7 +56,7 @@ const agentsData = reactive([
       <div class="flex justify-between mb-7">
         <SearchFilter />
         <div>
-          <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primary" />
+          <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
         </div>
       </div>
       <div class="flex flex-wrap gap-6 justify-center">
