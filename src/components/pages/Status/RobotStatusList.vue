@@ -1,51 +1,69 @@
 <template>
-  <div
-    class="flex-col justify-center w-72 h-96 bg-white shadow-md mx-auto p-4 mt-32 rounded-lg"
-  >
-    <h1 class="font-semibold text-2xl text-blue text-center">amr3_blue</h1>
-    <div class="text-center mt-4">
-      <v-progress-circular
-        :model-value="value"
-        :rotate="360"
-        :size="100"
-        :width="9"
-        class="v-progress-circular"
-        :class="value <= 20 ? 'text-red' : 'text-blue'"
-      >
-        <template v-slot:default>
-          <span class="font-semibold text-blue-500"> {{ value }}% </span>
-        </template>
-      </v-progress-circular>
+  <div class="flex justify-between py-8 px-20">
+    <SearchFilter />
+    <div>
+      <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primary" />
     </div>
+  </div>
+  <div class="flex justify-center mx-10 flex-wrap gap-x-4">
+    <div
+      v-for="(robot, index) in robots"
+      :key="index"
+      class="flex-col justify-center w-72 h-96 bg-white shadow-md mx-auto p-4 mt-8 rounded-lg"
+    >
+      <h1 class="font-semibold text-2xl text-blue text-center">{{ robot.name }}</h1>
+      <div class="text-center mt-4">
+        <v-progress-circular
+          :model-value="robot.value"
+          :rotate="360"
+          :size="100"
+          :width="9"
+          class="v-progress-circular"
+          :class="robot.value <= 20 ? 'text-red' : 'text-blue'"
+        >
+          <template v-slot:default>
+            <span class="font-semibold text-blue-500"> {{ robot.value }}% </span>
+          </template>
+        </v-progress-circular>
+      </div>
 
-    <!-- Roll, Pitch, Yaw -->
-    <div class="mt-6">
-      <div class="flex justify-between w-full px-4">
-        <h2 class="font-semibold text-blue">Roll</h2>
-        <h2 class="font-semibold text-blue">Pitch</h2>
-        <h2 class="font-semibold text-blue">Yaw</h2>
+      <!-- Roll, Pitch, Yaw -->
+      <div class="mt-6">
+        <div class="flex justify-between w-full px-4">
+          <h2 class="font-semibold text-blue">Roll</h2>
+          <h2 class="font-semibold text-blue">Pitch</h2>
+          <h2 class="font-semibold text-blue">Yaw</h2>
+        </div>
+        <div class="border-t-2 border-gray-300 mt-2 mb-1 w-full"></div>
+        <div class="flex justify-between w-full px-4">
+          <p class="font-semibold text-blue mt-1">{{ robot.roll }}°</p>
+          <p class="font-semibold text-blue mt-1">{{ robot.pitch }}°</p>
+          <p class="font-semibold text-blue mt-1">{{ robot.yaw }}°</p>
+        </div>
       </div>
-      <div class="border-t-2 border-gray-300 mt-2 mb-1 w-full"></div>
-      <div class="flex justify-between w-full px-4">
-        <p class="font-semibold text-blue mt-1">45°</p>
-        <p class="font-semibold text-blue mt-1">120°</p>
-        <p class="font-semibold text-blue mt-1">90°</p>
-      </div>
-    </div>
 
-    <!-- Signal, Status, Health -->
-    <div class="flex justify-between mt-2 p-4">
-      <div class="text-center">
-        <v-icon class="text-blue-500">mdi-wifi</v-icon>
-        <p class="font-semibold text-blue">Signal</p>
-      </div>
-      <div class="text-center">
-        <v-icon class="text-blue-500">mdi-bolt</v-icon>
-        <p class="font-semibold text-blue">Status</p>
-      </div>
-      <div class="text-center">
-        <h2 class="font-bold text-2xl text-blue">13H</h2>
-        <p class="font-semibold text-blue">Health</p>
+      <!-- Signal, Status, Health -->
+      <div class="flex justify-between mt-2 p-4">
+        <div class="text-center">
+          <img
+            src="@/assets/images/signal-icon.svg"
+            alt="Signal Icon"
+            class="h-8 mx-auto"
+          />
+          <p class="font-semibold text-blue">Signal</p>
+        </div>
+        <div class="text-center">
+          <img
+            src="@/assets/images/status-card-icon.svg"
+            alt="Status-card Icon"
+            class="h-8 mx-auto"
+          />
+          <p class="font-semibold text-blue">Status</p>
+        </div>
+        <div class="text-center">
+          <h2 class="font-bold text-2xl text-blue">{{ robot.health }}H</h2>
+          <p class="font-semibold text-blue">Health</p>
+        </div>
       </div>
     </div>
   </div>
@@ -53,24 +71,70 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import SearchFilter from "@/components/pages/Agents/SearchFilter.vue";
 
-const value = ref(70); // Set the initial value to 70 to match the image
-let interval: ReturnType<typeof setInterval> | undefined;
+const robots = ref([
+  {
+    name: "amr3_blue",
+    value: 70,
+    roll: 45,
+    pitch: 120,
+    yaw: 90,
+    health: 13,
+  },
+  {
+    name: "amr4_red",
+    value: 85,
+    roll: 60,
+    pitch: 110,
+    yaw: 100,
+    health: 12,
+  },
+  {
+    name: "amr5_red",
+    value: 85,
+    roll: 60,
+    pitch: 110,
+    yaw: 100,
+    health: 12,
+  },
+  {
+    name: "amr5_red",
+    value: 85,
+    roll: 60,
+    pitch: 110,
+    yaw: 100,
+    health: 12,
+  },
+  {
+    name: "amr5_red",
+    value: 85,
+    roll: 60,
+    pitch: 110,
+    yaw: 100,
+    health: 12,
+  },
+
+  // Tambahkan lebih banyak robot sesuai kebutuhan
+]);
+
+let intervals: ReturnType<typeof setInterval>[] = [];
 
 onMounted(() => {
-  interval = setInterval(() => {
-    if (value.value === 0) {
-      value.value = 100;
-    } else {
-      value.value -= 10;
-    }
-  }, 1000);
+  robots.value.forEach((robot, index) => {
+    const interval = setInterval(() => {
+      if (robot.value <= 0) {
+        robot.value = 100;
+      } else {
+        robot.value -= 5;
+      }
+    }, 1000);
+    intervals.push(interval);
+  });
 });
 
 onBeforeUnmount(() => {
-  if (interval) {
-    clearInterval(interval);
-  }
+  intervals.forEach((interval) => clearInterval(interval));
 });
 </script>
 

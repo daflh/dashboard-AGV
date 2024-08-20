@@ -29,7 +29,7 @@ function logout() {
         <img
           src="@/assets/images/status-icon.svg"
           alt="Engineer Icon"
-          class="h-6 mr-2"
+          class="h-8 mr-2"
         />
         <div>Status</div>
       </RouterLink>
