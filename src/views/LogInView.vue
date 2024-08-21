@@ -16,8 +16,8 @@ function submitForm() {
     <!-- Left Side -->
     <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8">
       <div class="max-w-md w-full">
-        <div class="flex items-center mb-6">
-          <div class="text-xl text-primaryblue italic cursor-default">
+        <div class="flex items-center mb-10">
+          <div class="text-2xl text-primaryblue italic cursor-default">
             <span class="font-medium">Logo</span>
             <span class="font-semibold">Produk</span>
           </div>

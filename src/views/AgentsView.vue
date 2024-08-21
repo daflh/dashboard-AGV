@@ -59,7 +59,7 @@ const agentsData = reactive([
           <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
         </div>
       </div>
-      <div class="flex flex-wrap gap-6 justify-center">
+      <div class="flex flex-wrap gap-6 justify-left">
         <AgentCard
           v-for="agent of agentsData"
           :key="agent.name"
