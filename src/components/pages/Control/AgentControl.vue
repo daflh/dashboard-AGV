@@ -11,7 +11,7 @@ defineProps<{
 }>()
 defineEmits(['exit'])
 
-const movingSpeed = ref(20)
+const movingSpeed = ref(2.5)
 
 </script>
 

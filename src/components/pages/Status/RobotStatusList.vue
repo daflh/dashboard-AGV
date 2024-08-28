@@ -1,23 +1,50 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useMainStore } from '@/stores/main'
+import SelectButton from 'primevue/selectbutton'
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 
+const filterOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Idle', value: 'idle' },
+]
+
 const mainStore = useMainStore()
+const searchValue = ref('')
+const selectedTag = ref(null)
+
+const filteredAgents = computed(() => {
+  return mainStore.agentsData.filter((agent) => {
+    if (agent.status === 'offline') return false
+    if (selectedTag.value === null) return true
+    return selectedTag.value === agent.status
+  })
+})
 
 </script>
 
 <template>
   <div class="flex justify-between py-8 px-20">
-    <AgentSearchFilter />
+    <div class="flex space-x-5">
+      <AgentSearchFilter v-model="searchValue" />
+      <SelectButton
+        v-model="selectedTag"
+        :options="filterOptions"
+        option-label="label"
+        option-value="value"
+        pt:root="space-x-2 [&>button]:!border-0 [&>button]:!rounded-lg"
+        aria-labelledby="basic"
+      />
+    </div>
     <div>
       <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
     </div>
   </div>
-  <div class="flex justify-center mx-10 flex-wrap gap-x-4">
+  <div class="flex justify-center mx-10 flex-wrap gap-8 mb-10">
     <div
-      v-for="(agent, index) in mainStore.agentsData"
+      v-for="(agent, index) in filteredAgents"
       :key="index"
-      class="flex-col justify-center w-72 h-96 bg-white shadow-md mx-auto p-4 mt-8 rounded-lg"
+      class="flex-col justify-center w-72 h-96 bg-white shadow-md p-4 rounded-lg"
     >
       <h1 class="font-semibold text-2xl text-primaryblue text-center">{{ agent.name }}</h1>
       <div class="text-center mt-4">
