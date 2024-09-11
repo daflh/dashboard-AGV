@@ -12,11 +12,17 @@ interface Agent {
     roll: number
     pitch: number
     yaw: number
-  }
+  },
+  location: [number, number] | null
 }
 
 interface MainState {
-  agentsData: Agent[]
+  agentsData: Agent[],
+  controlMapContextMenu: {
+    isVisible: boolean,
+    anchorPosition: [number, number],
+    coordinate: [number, number]
+  }
 }
 
 export const useMainStore = defineStore('main', {
@@ -34,7 +40,8 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: [933.28, -428.75]
       },
       {
         name: 'amr_new',
@@ -48,7 +55,8 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: [782, -500.98]
       },
       {
         name: 'amr2_blue',
@@ -62,7 +70,8 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: null
       },
       {
         name: 'amr3_blue',
@@ -76,7 +85,8 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: [495.06, -765.46]
       },
       {
         name: 'amr4',
@@ -90,7 +100,8 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: null
       },
       {
         name: 'amr_2021',
@@ -104,9 +115,15 @@ export const useMainStore = defineStore('main', {
           roll: 45,
           pitch: 120,
           yaw: 90
-        }
+        },
+        location: null
       }
-    ]
+    ],
+    controlMapContextMenu: {
+      isVisible: false,
+      anchorPosition: [0, 0],
+      coordinate: [0, 0]
+    }
   }),
   actions: {}
 })

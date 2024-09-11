@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
-import Slider from 'primevue/slider'
+import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
@@ -29,8 +29,8 @@ const movingSpeed = ref(2.5)
     <div class="flex">
       <ControlPad class="mr-4" />
       <div class="mt-2">
-        <div class="mb-5">Moving speed: <span class="font-medium">{{ movingSpeed }} m/s</span></div>
-        <Slider v-model="movingSpeed" :min="0" :max="5" :step="0.1" class="w-48 bg-red-600" />
+        <div class="mb-5">Moving speed: <span class="font-medium">{{ movingSpeed.toFixed(1) }} m/s</span></div>
+        <InputNumber v-model="movingSpeed" :min="0" :max="5" :step="0.1" showButtons inputClass="w-24" />
       </div>
     </div>
     <div class="mt-8">
