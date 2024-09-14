@@ -6,22 +6,21 @@ import Button from 'primevue/button'
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 
 const filterOptions = [
-  { label: 'Active', value: 'active' },
-  { label: 'Idle', value: 'idle' },
-]
+  { label: "Active", value: "active" },
+  { label: "Idle", value: "idle" },
+];
 
-const mainStore = useMainStore()
-const searchValue = ref('')
-const selectedTag = ref(null)
+const mainStore = useMainStore();
+const searchValue = ref("");
+const selectedTag = ref(null);
 
 const filteredAgents = computed(() => {
   return mainStore.agentsData.filter((agent) => {
-    if (agent.status === 'offline') return false
-    if (selectedTag.value === null) return true
-    return selectedTag.value === agent.status
-  })
-})
-
+    if (agent.status === "offline") return false;
+    if (selectedTag.value === null) return true;
+    return selectedTag.value === agent.status;
+  });
+});
 </script>
 
 <template>
@@ -41,13 +40,15 @@ const filteredAgents = computed(() => {
       <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
     </div>
   </div>
-  <div class="flex justify-center mx-10 flex-wrap gap-8 mb-10">
+  <div class="flex justify-left mx-20 flex-wrap gap-16 mb-10">
     <div
       v-for="(agent, index) in filteredAgents"
       :key="index"
       class="flex-col justify-center w-72 h-96 bg-white shadow-md p-4 rounded-lg"
     >
-      <h1 class="font-semibold text-2xl text-primaryblue text-center">{{ agent.name }}</h1>
+      <h1 class="font-semibold text-2xl text-primaryblue text-center">
+        {{ agent.name }}
+      </h1>
       <div class="text-center mt-4">
         <v-progress-circular
           :model-value="agent.battery"
@@ -56,6 +57,7 @@ const filteredAgents = computed(() => {
           :width="9"
           class="v-progress-circular"
           :class="agent.battery <= 20 ? 'text-primaryred' : 'text-primaryblue'"
+          :style="{ strokeLinecap: 'round' }"
         >
           <template v-slot:default>
             <span class="font-semibold text-primaryblue-500"> {{ agent.battery }}% </span>
@@ -89,12 +91,9 @@ const filteredAgents = computed(() => {
           <p class="font-semibold text-primaryblue">Signal</p>
         </div>
         <div class="text-center">
-          <img
-            src="@/assets/images/status-card-icon.svg"
-            alt="Status-card Icon"
-            class="h-8 mx-auto"
-          />
-          <p class="font-semibold text-primaryblue">Status</p>
+          <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-sm">m/s</span></h2>
+
+          <p class="font-semibold text-primaryblue">Velocity</p>
         </div>
         <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.health }}H</h2>

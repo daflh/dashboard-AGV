@@ -16,9 +16,12 @@ defineProps({
       <div class="text-lg font-medium">{{ agent.name }}</div>
       <AgentStatus :status="agent.status" />
     </div>
-    <div class="text-slate-700">
-      {{ agent.currentTask }}
+    <div class="font-medium text-xs text-slate-700">
+      {{ agent.plant }}
     </div>
+    <!-- <div class="text-slate-700">
+      {{ agent.currentTask }}
+    </div> -->
     <hr class="my-3" />
     <div class="flex justify-around">
       <div>
