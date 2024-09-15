@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useRouter, RouterLink } from 'vue-router'
 import { ref } from 'vue'
-import OverlayPanel from 'primevue/overlaypanel'
+import Popover from 'primevue/popover'
 
 const router = useRouter()
-const op = ref<typeof OverlayPanel | null>(null)  // Pastikan ref bisa berupa null awalnya
+const op = ref<typeof Popover | null>(null)  // Pastikan ref bisa berupa null awalnya
 
 const logout = () => {
   localStorage.removeItem('isLoggedIn')
@@ -36,20 +36,19 @@ const togglePopover = (event: Event) => {
         <div>Control and Map</div>
       </RouterLink>
     </div>
-    <div class="flex items-center justify-center relative">
+    <div class="flex items-center justify-center relative cursor-pointer" @click="togglePopover">
       <img src="@/assets/images/profile_pict.png" alt="Profile Pict" class="ml-4 w-12" />
       <img
         src="@/assets/images/profile_setting.svg"
         alt="Profile Setting"
-        class="mx-4 w-5 cursor-pointer"
-        @click="togglePopover"
+        class="mx-4 w-5"
       />
       
-      <OverlayPanel ref="op" class="!mt-6">
+      <Popover ref="op" class="!mt-6">
         <div>
           <button @click="logout" class=" text-primaryred rounded">Logout</button>
         </div>
-      </OverlayPanel>
+      </Popover>
     </div>
   </div>
 </template>

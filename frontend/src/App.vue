@@ -1,19 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { RouterView } from "vue-router";
-import { useMainStore } from '@/stores/main'
+import initializeSocket from "./initializeSocket";
 
-const mainStore = useMainStore()
-
-mainStore.agentsData.forEach((agent) => {
-  setInterval(() => {
-    if (agent.battery <= 5) {
-      agent.battery = 100;
-    } else {
-      agent.battery -= 5;
-    }
-  }, 1000);
-});
+initializeSocket();
 
 // Reactive reference to store scroll position
 const scrollY = ref(0);
@@ -27,7 +17,6 @@ const handleScroll = () => {
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
 });
-
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });

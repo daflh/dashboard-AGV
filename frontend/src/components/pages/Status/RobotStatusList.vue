@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue'
 import { useMainStore } from '@/stores/main'
 import SelectButton from 'primevue/selectbutton'
-import Button from 'primevue/button'
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 
 const filterOptions = [
@@ -35,9 +34,6 @@ const filteredAgents = computed(() => {
         pt:root="space-x-2 [&>button]:!border-0 [&>button]:!rounded-lg"
         aria-labelledby="basic"
       />
-    </div>
-    <div>
-      <Button type="button" label="Add" icon="pi pi-plus" class="!bg-primaryblue" />
     </div>
   </div>
   <div class="flex justify-left mx-20 flex-wrap gap-16 mb-10">
@@ -91,7 +87,7 @@ const filteredAgents = computed(() => {
           <p class="font-semibold text-primaryblue">Signal</p>
         </div>
         <div class="text-center">
-          <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-sm">m/s</span></h2>
+          <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-base">m/s</span></h2>
 
           <p class="font-semibold text-primaryblue">Velocity</p>
         </div>

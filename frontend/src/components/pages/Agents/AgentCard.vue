@@ -16,7 +16,7 @@ defineProps({
       <div class="text-lg font-medium">{{ agent.name }}</div>
       <AgentStatus :status="agent.status" />
     </div>
-    <div class="font-medium text-xs text-slate-700">
+    <div class="font-medium text-sm text-slate-700">
       {{ agent.plant }}
     </div>
     <!-- <div class="text-slate-700">

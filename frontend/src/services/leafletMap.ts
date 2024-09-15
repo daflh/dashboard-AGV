@@ -28,7 +28,7 @@ class LeafletMap {
     // add slam mapping result to the map and set as center point
     const latLngBounds = L.latLngBounds([
       [0, 0],
-      [-slamMapRes[1]/1000, slamMapRes[0]/1000] // coord divide by 1000
+      [slamMapRes[1]/1000, slamMapRes[0]/1000] // coord divide by 1000
     ]);
     this.map.addLayer(L.imageOverlay(slamMapUrl, latLngBounds));
     this.map.setView(latLngBounds.getCenter());

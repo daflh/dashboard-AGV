@@ -81,7 +81,11 @@ const toggleDialog = () => {
         </div>
       </div>
       <div class="flex flex-wrap gap-6 justify-left">
-        <AgentCard v-for="agent of filteredAgents" :key="agent.name" :agent="agent" />
+        <AgentCard
+          v-for="agent of filteredAgents"
+          :key="agent.name"
+          :agent="agent"
+        />
       </div>
     </div>
   </UserLayout>
