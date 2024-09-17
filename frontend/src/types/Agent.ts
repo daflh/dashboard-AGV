@@ -1,4 +1,4 @@
-interface Agent {
+export default interface Agent {
   id: number
   name: string
   currentTask: string | null
@@ -16,5 +16,3 @@ interface Agent {
   },
   location: [number, number] | null
 }
-
-export default Agent;

@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useMainStore } from '@/stores/main'
 
 defineEmits(['agent-click'])
 
 const mainStore = useMainStore()
+
+// agents that are not offline
+const availableAgents = computed(() => {
+  return mainStore.agents.filter((agent) => {
+    return agent.status !== "offline";
+  });
+});
 
 </script>
 
@@ -14,7 +22,7 @@ const mainStore = useMainStore()
     </div>
     <div class="flex flex-col divide-y-2 w-64">
       <div
-        v-for="agent in mainStore.agentsData"
+        v-for="agent in availableAgents"
         :key="agent.name"
         class="px-2.5 py-2 flex justify-between items-center cursor-pointer"
         :title="`Control agent ${agent.name}`"

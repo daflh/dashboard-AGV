@@ -6,10 +6,6 @@ body {
   @apply font-sans;
 }
 
-/* @font-face {
-  font-display: swap;
-  font-family: 'VAG Rounded Next';
-  font-style: normal;
-  font-weight: 700;
-  src: url('@/assets/fonts/VAGRoundedNext-Heavy.ttf') format('truetype');
-} */
+.slam-map {
+  image-rendering: pixelated;
+}

@@ -1,39 +1,69 @@
 import L from 'leaflet';
-import slamMapUrl from '@/assets/images/slam_example.png';
-
-const slamMapRes = [1596, 1010]; // hard-coded slam map resolution
+import CoordConversion from '@/utils/CoordConversion';
+import { SlamMap, Agent } from '@/types';
 
 class LeafletMap {
-  map: L.Map | null;
-  isInitialized: boolean;
+  public map: L.Map | null;
+  private slamMapLayer: L.ImageOverlay;
+  private agentsLayerGroup: L.LayerGroup;
   
   constructor() {
     this.map = null;
-    this.isInitialized = false;
+    this.slamMapLayer = L.imageOverlay('', [[0, 0], [0, 0]], {
+      className: 'slam-map'
+    });
+    this.agentsLayerGroup = L.layerGroup();
   }
 
-  initializeMap() {
+  public initializeMap() {
     this.map = L.map('leaflet-map', {
       crs: L.CRS.Simple, // use flat surface (x y) coordinate
       attributionControl: false,
       zoomControl: false
     });
 
-    // set map view to center of the map
-    this.map.setView([0, 0], 10);
-
     // add zoom in/out control
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // add slam mapping result to the map and set as center point
-    const latLngBounds = L.latLngBounds([
-      [0, 0],
-      [slamMapRes[1]/1000, slamMapRes[0]/1000] // coord divide by 1000
-    ]);
-    this.map.addLayer(L.imageOverlay(slamMapUrl, latLngBounds));
-    this.map.setView(latLngBounds.getCenter());
+    this.slamMapLayer.addTo(this.map);
+    this.agentsLayerGroup.addTo(this.map);
+  }
 
-    this.isInitialized = true;
+  public setSlamMap(slamMapData: SlamMap) {
+    if (!this.map) {
+      console.error('Leaflet map is not initialized');
+      return;
+    }
+    
+    const slamMapBounds = L.latLngBounds([
+      [0, 0],
+      CoordConversion.slamToLeaflet([slamMapData.width, slamMapData.height])
+    ]);
+    const slamMapImg = 'data:image/png;base64,' + slamMapData.content;
+    this.slamMapLayer.setBounds(slamMapBounds);
+    this.slamMapLayer.setUrl(slamMapImg);
+    
+    // set view to the center of SLAM map
+    this.map.setView(slamMapBounds.getCenter(), 10);
+  }
+
+  public setAgents(agents: Agent[]) {
+    if (!this.map) {
+      console.error('Leaflet map is not initialized');
+      return;
+    }
+
+    // remove previous agents layer before adding new layers
+    this.agentsLayerGroup.clearLayers();
+
+    agents.forEach((agent) => {
+      if (agent.location) {
+        L.circle(
+          CoordConversion.slamToLeaflet(agent.location),
+          { radius: 0.0025, color: 'red' }
+        ).addTo(this.agentsLayerGroup);
+      }
+    });
   }
 }
 

@@ -19,7 +19,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: [933.28, -428.75]
+    location: [202.981, 159.549]
   },
   {
     id: 202409151505123,
@@ -37,7 +37,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: null
+    location: [176.494, 200.183]
   },
   {
     id: 202409151505924,
@@ -55,7 +55,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: [782, -500.98]
+    location: [210.668, 159.549]
   },
   {
     id: 202409151505432,
@@ -73,7 +73,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: null
+    location: [313.383, 176.510]
   },
   {
     id: 202409151505053,
@@ -91,7 +91,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: [495.06, -765.46]
+    location: null
   },
   {
     id: 202409151505842,
@@ -109,7 +109,7 @@ const dummyAgents: Agent[] = [
       pitch: 120,
       yaw: 90
     },
-    location: null
+    location: [354.413, 221.167]
   },
   {
     id: 202409151505284,

@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { Socket } from 'socket.io-client'
-import Agent from '@/types/Agent'
+import { Agent, SlamMap } from '@/types'
 
 interface MainState {
   socket: Socket | null,
-  agentsData: Agent[],
+  slamMap: SlamMap | null,
+  agents: Agent[],
   controlMapContextMenu: {
     isVisible: boolean,
     anchorPosition: [number, number],
@@ -15,7 +16,8 @@ interface MainState {
 export const useMainStore = defineStore('main', {
   state: (): MainState => ({
     socket: null,
-    agentsData: [],
+    slamMap: null,
+    agents: [],
     controlMapContextMenu: {
       isVisible: false,
       anchorPosition: [0, 0],

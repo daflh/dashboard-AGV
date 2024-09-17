@@ -23,7 +23,7 @@ const displayDialog = ref(false); // Dialog visibility
 
 // Computed property to filter agents based on selected tags
 const filteredAgents = computed(() => {
-  return mainStore.agentsData.filter((agent) => {
+  return mainStore.agents.filter((agent) => {
     if (selectedTags.value.length === 0) return true;
     return selectedTags.value.includes(agent.status);
   });

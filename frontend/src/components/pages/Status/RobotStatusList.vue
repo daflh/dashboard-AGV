@@ -14,12 +14,13 @@ const searchValue = ref("");
 const selectedTag = ref(null);
 
 const filteredAgents = computed(() => {
-  return mainStore.agentsData.filter((agent) => {
+  return mainStore.agents.filter((agent) => {
     if (agent.status === "offline") return false;
     if (selectedTag.value === null) return true;
     return selectedTag.value === agent.status;
   });
 });
+
 </script>
 
 <template>
