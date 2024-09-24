@@ -1,17 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useMainStore } from '@/stores/main'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
 
-defineProps<{
+const props = defineProps<{
   agent: string | null
-}>()
-defineEmits(['exit'])
+}>();
+defineEmits(['exit']);
 
-const movingSpeed = ref(2.5)
+const mainStore = useMainStore();
+
+const movingSpeed = ref(2.5);
+const agentData = computed(() => {
+  return mainStore.agents.find((agent) => agent.name === props.agent) || null;
+});
+
+function onControlDirection(direction: string) {
+  // passing to backend
+  mainStore.socket?.emit('agentCmd:direction', props.agent, direction);
+}
 
 </script>
 
@@ -27,11 +38,19 @@ const movingSpeed = ref(2.5)
     </div>
     <h2 class="text-lg mb-4 font-medium">Controlling <span class="font-semibold">{{ agent }}</span></h2>
     <div class="flex">
-      <ControlPad class="mr-4" />
+      <ControlPad class="mr-4" @direction="onControlDirection" />
       <div class="mt-2">
-        <div class="mb-5">Moving speed: <span class="font-medium">{{ movingSpeed.toFixed(1) }} m/s</span></div>
+        <div class="mb-5">Moving speed: <span class="font-medium">{{ movingSpeed.toFixed(1) }}</span></div>
         <InputNumber v-model="movingSpeed" :min="0" :max="5" :step="0.1" showButtons inputClass="w-24" />
       </div>
+    </div>
+    <div class="mt-4 space-y-0.5">
+      <div>Position: <span class="font-medium">
+        {{ agentData?.odom.position.x ?? '-' }}, {{ agentData?.odom.position.y ?? '-' }}
+      </span></div>
+      <div>Orientation: <span class="font-medium">{{ agentData?.odom.orientation.z ?? '-' }} rad</span></div>
+      <div>Linear vel: <span class="font-medium">{{ agentData?.linearVelocity.x ?? '-' }} m/s</span></div>
+      <div>Angular vel: <span class="font-medium">{{ agentData?.angularVelocity.z ?? '-' }} rad/s</span></div>
     </div>
     <div class="mt-8">
       <h2 class="text-lg font-medium">Actions</h2>

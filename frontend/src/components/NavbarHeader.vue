@@ -33,7 +33,7 @@ const togglePopover = (event: Event) => {
       </RouterLink>
       <RouterLink class="flex items-center text-primaryblue font-semibold h-6" to="/control">
         <img src="@/assets/images/map-and-control-icon.svg" alt="Engineer Icon" class="h-6 mr-2" />
-        <div>Control and Map</div>
+        <div>Map & Control</div>
       </RouterLink>
     </div>
     <div class="flex items-center justify-center relative cursor-pointer" @click="togglePopover">

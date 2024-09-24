@@ -58,10 +58,12 @@ class LeafletMap {
 
     agents.forEach((agent) => {
       if (agent.location) {
-        L.circle(
-          CoordConversion.slamToLeaflet(agent.location),
-          { radius: 0.0025, color: 'red' }
-        ).addTo(this.agentsLayerGroup);
+        L.circle(CoordConversion.slamToLeaflet(agent.location), {
+          radius: 0.0025,
+          color: 'red',
+          weight: 3,
+          fillColor: 'transparent'
+        }).addTo(this.agentsLayerGroup);
       }
     });
   }

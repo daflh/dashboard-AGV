@@ -16,11 +16,11 @@ const availableAgents = computed(() => {
 </script>
 
 <template>
-  <div class="">
+  <div class="w-full">
     <div class="mb-3">
       <h2 class="text-lg font-medium">Select agent to control</h2>
     </div>
-    <div class="flex flex-col divide-y-2 w-64">
+    <div class="flex flex-col divide-y-2">
       <div
         v-for="agent in availableAgents"
         :key="agent.name"

@@ -60,13 +60,13 @@ onMounted(() => {
         <MapContextMenu />
       </div>
       <!-- Right Side -->
-      <div class="flex px-10 py-8">
+      <div class="flex px-10 py-8 grow">
         <AgentList
-          v-show="!selectedAgent"
+          v-if="!selectedAgent"
           @agent-click="(a) => selectedAgent = a"
         />
         <AgentControl
-          v-show="selectedAgent"
+          v-else
           :agent="selectedAgent"
           @exit="() => selectedAgent = null"
         />

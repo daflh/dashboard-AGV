@@ -70,7 +70,7 @@ const filteredAgents = computed(() => {
         </v-progress-circular>
       </div>
 
-      <!-- Roll, Pitch, Yaw -->
+      <!-- Roll, Pitch, Yaw
       <div class="mt-6">
         <div class="flex justify-between w-full px-4">
           <h2 class="font-semibold text-primaryblue">Roll</h2>
@@ -79,22 +79,35 @@ const filteredAgents = computed(() => {
         </div>
         <div class="border-t-2 border-gray-300 mt-2 mb-1 w-full"></div>
         <div class="flex justify-between w-full px-4">
-          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.roll }}°</p>
-          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.pitch }}°</p>
-          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.yaw }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.orientation.x }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.orientation.y }}°</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ agent.imu.orientation.z }}°</p>
+        </div>
+      </div> -->
+
+      <!-- Linear & Angular Velocity -->
+      <div class="mt-6">
+        <div class="flex justify-between w-full px-4 text-sm">
+          <h2 class="font-semibold text-primaryblue">Linear Vel.</h2>
+          <h2 class="font-semibold text-primaryblue">Angular Vel.</h2>
+        </div>
+        <div class="border-t-2 border-gray-300 mt-2 mb-1 w-full"></div>
+        <div class="flex justify-between w-full px-4">
+          <p class="font-semibold text-primaryblue mt-1">{{ agent.linearVelocity.x.toFixed(2) + ' m/s' }}</p>
+          <p class="font-semibold text-primaryblue mt-1">{{ agent.angularVelocity.z.toFixed(2) + ' rad/s' }}</p>
         </div>
       </div>
 
       <!-- Signal, Status, Health -->
-      <div class="flex justify-between mt-2 p-4">
+      <div class="flex justify-center gap-x-6 mt-2 p-4">
         <div class="text-center">
           <img src="@/assets/images/signal-icon.svg" alt="Signal Icon" class="h-8 mx-auto" />
           <p class="font-semibold text-primaryblue">Signal</p>
         </div>
-        <div class="text-center">
+        <!-- <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-base">m/s</span></h2>
           <p class="font-semibold text-primaryblue">Velocity</p>
-        </div>
+        </div> -->
         <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.health }}H</h2>
         </div>

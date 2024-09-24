@@ -2,6 +2,20 @@ import Agent from "../models/Agent";
 
 type OnAgentUpdateCallback = (agentId: number, agentData: object) => void;
 
+const defaultAgentData = {
+  odom: {
+    position: { x: 0, y: 0, z: 0 },
+    orientation: { x: 0, y: 0, z: 0, w: 0 }
+  },
+  imu: {
+    orientation: { x: 0, y: 0, z: 0, w: 0 },
+    angular_velocity: { x: 0, y: 0, z: 0 },
+    linear_acceleration: { x: 0, y: 0, z: 0 }
+  },
+  linearVelocity: { x: 0, y: 0, z: 0 },
+  angularVelocity: { x: 0, y: 0, z: 0 }
+}
+
 const dummyAgents: Agent[] = [
   {
     id: 202409151505235,
@@ -14,12 +28,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: true,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: [202.981, 159.549]
+    location: [202.981, 159.549],
+    ...defaultAgentData
   },
   {
     id: 202409151505123,
@@ -32,12 +47,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: true,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: [176.494, 200.183]
+    location: [176.494, 200.183],
+    ...defaultAgentData
   },
   {
     id: 202409151505924,
@@ -50,12 +66,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: true,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: [210.668, 159.549]
+    location: [210.668, 159.549],
+    ...defaultAgentData
   },
   {
     id: 202409151505432,
@@ -68,12 +85,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: false,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: [313.383, 176.510]
+    location: [313.383, 176.510],
+    ...defaultAgentData
   },
   {
     id: 202409151505053,
@@ -86,12 +104,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: false,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: null
+    location: null,
+    ...defaultAgentData
   },
   {
     id: 202409151505842,
@@ -104,12 +123,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: true,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: [354.413, 221.167]
+    location: [354.413, 221.167],
+    ...defaultAgentData
   },
   {
     id: 202409151505284,
@@ -122,12 +142,13 @@ const dummyAgents: Agent[] = [
     velocity: 75, 
     health: 12,
     hsm: false,
-    imu: {
+    attitude: {
       roll: 45,
       pitch: 120,
       yaw: 90
     },
-    location: null
+    location: null,
+    ...defaultAgentData
   }
 ];
 

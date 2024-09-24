@@ -14,7 +14,7 @@ interface MapData {
   content: string; // base64 png
 }
 
-class MapService {
+class MapProviderService {
   private mapName: string;
   private isMapLoaded: boolean;
   private mapData: MapData | null;
@@ -34,7 +34,7 @@ class MapService {
   private async loadMap() {
     const mapDirectory = `./maps/${this.mapName}`;
     if (!fs.existsSync(mapDirectory)) {
-      console.error('Error reading map: Map directory not found');
+      console.error('MapProvider: Error reading map: Map directory not found');
       return;
     }
 
@@ -78,9 +78,9 @@ class MapService {
         content: pngFileBuffer.toString('base64')
       };
 
-      console.log('Successfully loaded map ' + this.mapName);
+      console.log('MapProvider: Successfully loaded map ' + this.mapName);
     } catch (error) {
-      console.error('Error reading png file:', error)
+      console.error('MapProvider: Error reading png file:', error)
     }
   }
 
@@ -90,7 +90,7 @@ class MapService {
     const magicNumEndIdx = pgmContent.indexOf('\n');
     const magicNumber = pgmContent.subarray(0, magicNumEndIdx).toString();
     if (magicNumber !== 'P5') {
-      console.error('Error reading map: Not a pgm file');
+      console.error('MapProvider: Error reading map: Not a pgm file');
       return;
     }
   
@@ -127,12 +127,12 @@ class MapService {
           .on('finish', resolve)
           .on('error', reject)
       });
-      console.log('Successfully generating png');
+      console.log('MapProvider: Successfully generating png');
     } catch (error) {
-      console.error('Error when converting pgm to png:', error)
+      console.error('MapProvider: Error when converting pgm to png:', error)
     }
   }
 }
 
-export default MapService;
+export default MapProviderService;
 export { MapData };

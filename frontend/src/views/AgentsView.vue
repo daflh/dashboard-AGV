@@ -19,7 +19,7 @@ const filterOptions = [
 const mainStore = useMainStore();
 const searchValue = ref("");
 const selectedTags = ref<string[]>([]);
-const displayDialog = ref(false); // Dialog visibility
+const displayAddAgentDialog = ref(false); // Dialog visibility
 
 // Computed property to filter agents based on selected tags and search input
 const filteredAgents = computed(() => {
@@ -31,8 +31,8 @@ const filteredAgents = computed(() => {
 });
 
 // Function to toggle dialog visibility
-const toggleDialog = () => {
-  displayDialog.value = !displayDialog.value;
+const toggleAddAgentDialog = () => {
+  displayAddAgentDialog.value = !displayAddAgentDialog.value;
 };
 </script>
 
@@ -57,24 +57,32 @@ const toggleDialog = () => {
             type="button"
             label="Add"
             icon="pi pi-plus"
-            @click="toggleDialog"
+            @click="toggleAddAgentDialog"
             class="!bg-primaryblue !border-primaryblue"
           />
-          <Dialog v-model:visible="displayDialog" header="Add New Agent" modal>
+          <Dialog v-model:visible="displayAddAgentDialog" header="Add New Agent" modal>
             <div class="flex flex-col gap-4 w-96 p-1 bg-white">
-              <div class="flex flex-col">
-                <h1 class="font-medium">Agent Name</h1>
-                <InputText placeholder="Enter Agent Name" class=" p-2 border rounded" />
-                <h1 class="mt-2 font-medium">IP Address</h1>
-                <InputText placeholder="Enter IP Address" class=" p-2 border rounded" />
-                <h1 class="mt-2 font-medium">HSM Key</h1>
-                <InputText placeholder="Enter HSM Key" class=" p-2 border rounded" />
-                <h1 class="mt-2 font-medium">Register Plant</h1>
-                <InputText placeholder="Enter Register Plant" class=" p-2 border rounded" />
+              <div class="flex flex-col space-y-3 w-full">
+                <div>
+                  <h1 class="font-medium mb-1">Agent Name</h1>
+                  <InputText placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
+                </div>
+                <div>
+                  <h1 class="font-medium mb-1">IP Address</h1>
+                  <InputText placeholder="Enter IP Address" class="w-full p-2 border rounded" />
+                </div>
+                <div>
+                  <h1 class="font-medium mb-1">HSM Key</h1>
+                  <InputText placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
+                </div>
+                <div>
+                  <h1 class="font-medium mb-1">Register Plant</h1>
+                  <InputText placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+                </div>
                 <Button
                   label="Submit"
-                  class="mt-6 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
-                  @click="toggleDialog"
+                  class="!mt-5 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
+                  @click="toggleAddAgentDialog"
                 />
               </div>
             </div>
