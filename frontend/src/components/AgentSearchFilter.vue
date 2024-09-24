@@ -3,10 +3,13 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 
-defineProps<{
+// Define props for modelValue
+const props = defineProps<{
   modelValue: string
 }>()
-defineEmits(['update:modelValue'])
+
+// Emit event for modelValue
+const emit = defineEmits(['update:modelValue'])
 
 </script>
 
@@ -14,10 +17,10 @@ defineEmits(['update:modelValue'])
   <IconField class="drop-shadow">
     <InputIcon class="pi pi-search" />
     <InputText
-      x-model="modelValue"
+      v-model="props.modelValue"
       placeholder="Search agents"
       class="w-[15rem]"
-      @input="(e) => $emit('update:modelValue', e.value)"
+      @input="(e) => emit('update:modelValue', e.target.value)"  
     />
   </IconField>
 </template>

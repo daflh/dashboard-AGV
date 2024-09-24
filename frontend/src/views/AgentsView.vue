@@ -21,11 +21,12 @@ const searchValue = ref("");
 const selectedTags = ref<string[]>([]);
 const displayDialog = ref(false); // Dialog visibility
 
-// Computed property to filter agents based on selected tags
+// Computed property to filter agents based on selected tags and search input
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
-    if (selectedTags.value.length === 0) return true;
-    return selectedTags.value.includes(agent.status);
+    const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
+    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status);
+    return matchesSearch && matchesTags;
   });
 });
 
@@ -68,7 +69,7 @@ const toggleDialog = () => {
                 <InputText placeholder="Enter IP Address" class=" p-2 border rounded" />
                 <h1 class="mt-2 font-medium">HSM Key</h1>
                 <InputText placeholder="Enter HSM Key" class=" p-2 border rounded" />
-                <h1 class="mt-2 font-medium">Regiter Plant</h1>
+                <h1 class="mt-2 font-medium">Register Plant</h1>
                 <InputText placeholder="Enter Register Plant" class=" p-2 border rounded" />
                 <Button
                   label="Submit"

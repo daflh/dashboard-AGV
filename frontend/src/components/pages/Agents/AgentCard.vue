@@ -1,5 +1,11 @@
 <script setup lang="ts">
+import {ref} from "vue";
 import AgentStatus from './AgentStatus.vue'
+import Dialog from "primevue/dialog";
+import InputText from "primevue/inputtext";
+import Button from "primevue/button";
+
+
 
 defineProps({
   agent: {
@@ -7,7 +13,11 @@ defineProps({
     required: true
   }
 })
+const displayDialog = ref(false); // Dialog visibility
 
+const toggleDialog = () => {
+  displayDialog.value = !displayDialog.value;
+}
 </script>
 
 <template>
@@ -35,13 +45,32 @@ defineProps({
           <path d="M8.75004 5.83365C9.15255 5.83365 9.47921 5.50701 9.47921 5.10452C9.47921 4.70203 9.15255 4.37538 8.75004 4.37538C8.34754 4.37538 8.02088 4.70203 8.02088 5.10452C8.02088 5.50701 8.34754 5.83365 8.75004 5.83365Z" fill="black"/>
         </svg>
       </div>
-      <div>
-        <svg width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <button>
+        <svg @click="toggleDialog" width="18" height="17" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M8.7611 5.39137C9.53166 4.2756 9.37868 2.76547 8.39981 1.82702C7.40727 0.873619 5.88928 0.728223 4.73382 1.47589C4.25945 1.78251 3.88721 2.22354 3.66462 2.74266C3.44524 3.25672 3.38774 3.82543 3.49978 4.37299C3.61231 4.92307 3.88767 5.42661 4.29011 5.81815C4.7002 6.21455 5.21691 6.48292 5.77704 6.59041C6.34105 6.70049 6.92486 6.64528 7.45819 6.43121C7.98523 6.22031 8.43842 5.85857 8.7611 5.39137Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M9.73896 14.4236C8.96829 13.3078 9.12138 11.7977 10.1003 10.8593C11.0928 9.90593 12.6108 9.76051 13.7662 10.5082C14.2406 10.8148 14.6128 11.2558 14.8354 11.7749C15.0548 12.289 15.1123 12.8577 15.0003 13.4052C14.8877 13.9553 14.6123 14.4589 14.2099 14.8504C13.7999 15.2468 13.2831 15.5152 12.723 15.6227C12.1599 15.7317 11.5775 15.6761 11.0453 15.4623C10.5171 15.2522 10.0627 14.8909 9.73896 14.4236Z" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M9.25 2.97635C8.78235 2.97635 8.40323 3.35546 8.40323 3.82312C8.40323 4.29078 8.78235 4.6699 9.25 4.6699V2.97635ZM17.1532 4.6699C17.6209 4.6699 18 4.29078 18 3.82312C18 3.35546 17.6209 2.97635 17.1532 2.97635V4.6699ZM3.44339 4.6699C3.91104 4.6699 4.29016 4.29078 4.29016 3.82312C4.29016 3.35546 3.91104 2.97635 3.44339 2.97635V4.6699ZM1.34677 2.97635C0.879118 2.97635 0.5 3.35546 0.5 3.82312C0.5 4.29078 0.879118 4.6699 1.34677 4.6699V2.97635ZM9.25 13.7022C9.71764 13.7022 10.0968 13.323 10.0968 12.8554C10.0968 12.3877 9.71764 12.0086 9.25 12.0086V13.7022ZM1.34677 12.0086C0.879118 12.0086 0.5 12.3877 0.5 12.8554C0.5 13.323 0.879118 13.7022 1.34677 13.7022V12.0086ZM15.0566 12.0086C14.589 12.0086 14.2098 12.3877 14.2098 12.8554C14.2098 13.323 14.589 13.7022 15.0566 13.7022V12.0086ZM17.1532 13.7022C17.6209 13.7022 18 13.323 18 12.8554C18 12.3877 17.6209 12.0086 17.1532 12.0086V13.7022ZM9.25 4.6699H17.1532V2.97635H9.25V4.6699ZM3.44339 2.97635H1.34677V4.6699H3.44339V2.97635ZM9.25 12.0086H1.34677V13.7022H9.25V12.0086ZM15.0566 13.7022H17.1532V12.0086H15.0566V13.7022Z" fill="black"/>
         </svg>
-      </div>
+        <Dialog v-model:visible="displayDialog" header="Edit Agent" modal>
+            <div class="flex flex-col gap-4 w-96 p-1 bg-white">
+              <div class="flex flex-col">
+                <h1 class="font-medium">New Agent Name</h1>
+                <InputText placeholder="Enter New Agent Name" class=" p-2 border rounded" />
+                <h1 class="mt-2 font-medium">New IP Address</h1>
+                <InputText placeholder="Enter New IP Address" class=" p-2 border rounded" />
+                <h1 class="mt-2 font-medium">New HSM Key</h1>
+                <InputText placeholder="Enter New HSM Key" class=" p-2 border rounded" />
+                <h1 class="mt-2 font-medium">New Register Plant</h1>
+                <InputText placeholder="Enter New Register Plant" class=" p-2 border rounded" />
+                <Button
+                  label="Submit"
+                  class="mt-6 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
+                  @click="toggleDialog"
+                />
+              </div>
+            </div>
+          </Dialog>
+      </button>
     </div>
   </div>
 </template>

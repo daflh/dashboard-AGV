@@ -4,29 +4,33 @@ import { useMainStore } from '@/stores/main'
 import SelectButton from 'primevue/selectbutton'
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 
+// Filter options for agent status
 const filterOptions = [
   { label: "Active", value: "active" },
   { label: "Idle", value: "idle" },
 ];
 
 const mainStore = useMainStore();
-const searchValue = ref("");
-const selectedTag = ref(null);
+const searchValue = ref(""); // Search value for agent names
+const selectedTag = ref(null); // Selected agent status
 
+// Computed property to filter agents based on search value and status
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
-    if (agent.status === "offline") return false;
-    if (selectedTag.value === null) return true;
-    return selectedTag.value === agent.status;
+    const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
+    const matchesTag = selectedTag.value === null || selectedTag.value === agent.status;
+    return matchesSearch && matchesTag;
   });
 });
-
 </script>
 
 <template>
   <div class="flex justify-between py-8 px-20">
     <div class="flex space-x-5">
+      <!-- Bind searchValue to AgentSearchFilter -->
       <AgentSearchFilter v-model="searchValue" />
+      
+      <!-- Filter by status using SelectButton -->
       <SelectButton
         v-model="selectedTag"
         :options="filterOptions"
@@ -37,6 +41,8 @@ const filteredAgents = computed(() => {
       />
     </div>
   </div>
+
+  <!-- Display filtered agents -->
   <div class="flex justify-left mx-20 flex-wrap gap-16 mb-10">
     <div
       v-for="(agent, index) in filteredAgents"
@@ -46,6 +52,8 @@ const filteredAgents = computed(() => {
       <h1 class="font-semibold text-2xl text-primaryblue text-center">
         {{ agent.name }}
       </h1>
+      
+      <!-- Battery Progress -->
       <div class="text-center mt-4">
         <v-progress-circular
           :model-value="agent.battery"
@@ -57,7 +65,7 @@ const filteredAgents = computed(() => {
           :style="{ strokeLinecap: 'round' }"
         >
           <template v-slot:default>
-            <span class="font-semibold text-primaryblue-500"> {{ agent.battery }}% </span>
+            <span class="font-semibold text-primaryblue-500">{{ agent.battery }}%</span>
           </template>
         </v-progress-circular>
       </div>
@@ -80,21 +88,15 @@ const filteredAgents = computed(() => {
       <!-- Signal, Status, Health -->
       <div class="flex justify-between mt-2 p-4">
         <div class="text-center">
-          <img
-            src="@/assets/images/signal-icon.svg"
-            alt="Signal Icon"
-            class="h-8 mx-auto"
-          />
+          <img src="@/assets/images/signal-icon.svg" alt="Signal Icon" class="h-8 mx-auto" />
           <p class="font-semibold text-primaryblue">Signal</p>
         </div>
         <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-base">m/s</span></h2>
-
           <p class="font-semibold text-primaryblue">Velocity</p>
         </div>
         <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.health }}H</h2>
-          <p class="font-semibold text-primaryblue">Health</p>
         </div>
       </div>
     </div>
