@@ -12,23 +12,9 @@ class TCPServerService {
     this.port = serverPort;
     this.logTitle = logTitle ?? null;
     this.eventEmitter = new EventEmitter();
-
-    this.createTcpServer();
   }
 
-  public onClientData(cb: (data: any) => void) {
-    this.eventEmitter.on('dataReceived', cb);
-  }
-
-  public emitDataToClient(data: string) {
-    this.eventEmitter.emit('dataToSend', data);
-  }
-
-  private get logPrefix() {
-    return this.logTitle ? `TCP (${this.logTitle})` : 'TCP';
-  }
-
-  private createTcpServer() {
+  public startServer() {
     const tcpServer = createServer((socket) => {
       console.log(this.logPrefix + ': Client connected');
 
@@ -54,6 +40,18 @@ class TCPServerService {
     tcpServer.listen(this.port, this.host, () => {
       console.log(this.logPrefix + ': Server is running on port ' + this.port);
     });
+  }
+
+  private get logPrefix() {
+    return this.logTitle ? `TCP (${this.logTitle})` : 'TCP';
+  }
+
+  public onClientData(cb: (data: any) => void) {
+    this.eventEmitter.on('dataReceived', cb);
+  }
+
+  public emitDataToClient(data: string) {
+    this.eventEmitter.emit('dataToSend', data);
   }
 }
 

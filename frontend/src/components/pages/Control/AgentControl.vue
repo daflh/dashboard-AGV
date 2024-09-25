@@ -7,6 +7,8 @@ import Button from 'primevue/button'
 import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
 
+type PositionCoordinate = [x: number, y: number];
+
 const props = defineProps<{
   agent: string | null
 }>();
@@ -15,6 +17,7 @@ defineEmits(['exit']);
 const mainStore = useMainStore();
 
 const movingSpeed = ref(2.5);
+const targetPosition = ref('');
 const agentData = computed(() => {
   return mainStore.agents.find((agent) => agent.name === props.agent) || null;
 });
@@ -22,6 +25,17 @@ const agentData = computed(() => {
 function onControlDirection(direction: string) {
   // passing to backend
   mainStore.socket?.emit('agentCmd:direction', props.agent, direction);
+}
+
+function onNavigate() {
+  // check if the position is valid (format: x,y)
+  if (targetPosition.value.match(/,/g)?.length !== 1) return;
+
+  const position: PositionCoordinate = targetPosition.value.split(',')
+    .map((coord) => parseFloat(coord));
+  mainStore.socket?.emit('agentCmd:targetPosition', props.agent, position);
+
+  targetPosition.value = '';
 }
 
 </script>
@@ -55,8 +69,17 @@ function onControlDirection(direction: string) {
     <div class="mt-8">
       <h2 class="text-lg font-medium">Actions</h2>
       <div class="mt-3">
-        <InputText placeholder="Enter coordinate" class="w-[15rem] !rounded-r-none !border-r-0" />
-        <Button type="button" label="Navigate" class="!bg-primaryblue !rounded-l-none !border-l-0" />
+        <InputText
+          v-model="targetPosition"
+          placeholder="Enter coordinate"
+          class="w-[15rem] !rounded-r-none !border-r-0"
+        />
+        <Button
+          type="button"
+          label="Navigate"
+          class="!bg-primaryblue !rounded-l-none !border-l-0"
+          @click="() => onNavigate()"
+        />
       </div>
       <div class="mt-3">
         <Button type="button" label="Map Entire Room" class="!bg-primaryblue" />

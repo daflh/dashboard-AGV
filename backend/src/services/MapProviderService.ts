@@ -23,15 +23,13 @@ class MapProviderService {
     this.mapName = mapName;
     this.isMapLoaded = false;
     this.mapData = null;
-
-    this.loadMap();
   }
 
   public getMap(): MapData | null {
     return this.isMapLoaded ? this.mapData : null;
   }
 
-  private async loadMap() {
+  public async loadMap() {
     const mapDirectory = `./maps/${this.mapName}`;
     if (!fs.existsSync(mapDirectory)) {
       console.error('MapProvider: Error reading map: Map directory not found');
