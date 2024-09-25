@@ -17,7 +17,7 @@ const togglePopover = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between bg-slate-100 p-4 border-b shadow border-gray-200">
+  <div class="flex items-center justify-between bg-slate-100 p-4 border-b shadow border-gray-200 fixed top-0 left-0 w-full z-50">
     <div class="text-xl text-primaryblue italic ml-4 cursor-default">
       <span class="font-medium">Logo</span>
       <span class="font-semibold">Produk</span>
@@ -51,6 +51,7 @@ const togglePopover = (event: Event) => {
       </Popover>
     </div>
   </div>
+  <div class="mb-20" />
 </template>
 
 <style scoped></style>
