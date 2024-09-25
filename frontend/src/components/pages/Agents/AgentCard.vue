@@ -20,7 +20,7 @@ const toggleEditAgentDialog = () => {
 </script>
 
 <template>
-  <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 w-[20rem]">
+  <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 min-w-[15rem]">
     <div class="flex justify-between mb-1">
       <div class="text-lg font-medium">{{ agent.name }}</div>
       <AgentStatus :status="agent.status" />

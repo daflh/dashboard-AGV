@@ -89,7 +89,7 @@ const toggleAddAgentDialog = () => {
           </Dialog>
         </div>
       </div>
-      <div class="flex flex-wrap gap-6 justify-left">
+      <div class="content-grid gap-6">
         <AgentCard
           v-for="agent of filteredAgents"
           :key="agent.name"
@@ -100,4 +100,27 @@ const toggleAddAgentDialog = () => {
   </UserLayout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .content-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .content-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+</style>
