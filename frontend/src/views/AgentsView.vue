@@ -19,9 +19,8 @@ const filterOptions = [
 const mainStore = useMainStore();
 const searchValue = ref("");
 const selectedTags = ref<string[]>([]);
-const displayAddAgentDialog = ref(false); // Dialog visibility
+const displayAddAgentDialog = ref(false);
 
-// Computed property to filter agents based on selected tags and search input
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
     const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
@@ -30,7 +29,7 @@ const filteredAgents = computed(() => {
   });
 });
 
-// Function to toggle dialog visibility
+
 const toggleAddAgentDialog = () => {
   displayAddAgentDialog.value = !displayAddAgentDialog.value;
 };
