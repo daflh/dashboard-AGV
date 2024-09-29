@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import CoordConversion from '@/utils/CoordConversion';
-import { SlamMap, Agent } from '@/types';
+import { Agent } from '@/types/agent';
+import { SlamMap } from '@/types/slam';
 
 class LeafletMap {
   public map: L.Map | null;
@@ -57,8 +58,8 @@ class LeafletMap {
     this.agentsLayerGroup.clearLayers();
 
     agents.forEach((agent) => {
-      if (agent.location) {
-        L.circle(CoordConversion.slamToLeaflet(agent.location), {
+      if (agent.position) {
+        L.circle(CoordConversion.slamToLeaflet(agent.position), {
           radius: 0.0025,
           color: 'red',
           weight: 3,

@@ -8,13 +8,11 @@ import Button from "primevue/button";
 import StatusIcon from "@/components/icon/StatusIcon.vue";
 import EditIcon from "@/components/icon/EditIcon.vue";
 import MapAndControlIcon from "@/components/icon/MapAndControlIcon.vue";
+import { Agent } from '@/types/agent';
 
-defineProps({
-  agent: {
-    type: Object,
-    required: true,
-  },
-});
+defineProps<{
+  agent: Agent;
+}>();
 const displayEditAgentDialog = ref(false); // Dialog visibility
 
 const toggleEditAgentDialog = () => {
@@ -26,14 +24,11 @@ const toggleEditAgentDialog = () => {
   <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 min-w-[15rem]">
     <div class="flex justify-between mb-1">
       <div class="text-lg font-medium">{{ agent.name }}</div>
-      <AgentStatus :status="agent.status" />
+      <AgentStatus :status="agent.status || 'offline'" />
     </div>
     <div class="font-medium text-sm text-slate-700">
-      {{ agent.plant }}
+      {{ agent.site }}
     </div>
-    <!-- <div class="text-slate-700">
-      {{ agent.currentTask }}
-    </div> -->
     <hr class="my-3" />
     <div class="flex justify-around">
       <RouterLink to="/status" title="Go to agent status">

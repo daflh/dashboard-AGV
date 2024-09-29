@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 import { useMainStore } from '@/stores/main';
-import { Agent, SlamMap } from '@/types';
+import { Agent, AgentCondition } from '@/types/agent';
+import { SlamMap } from '@/types/slam';
 
 const HOSTNAME = window.location.host.split(':')[0];
 
@@ -12,7 +13,7 @@ function initializeSocket() {
     mainStore.agents = agentsData;
   });
 
-  socket.on('agent:updated', (agentId: number, agentData: object) => {
+  socket.on('agent:updated', (agentId: number, agentData: AgentCondition) => {
     const agentIndex = mainStore.agents.findIndex((a) => a.id === agentId);
     if (agentIndex !== -1) {
       mainStore.agents[agentIndex] = {

@@ -6,8 +6,7 @@ import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
-
-type PositionCoordinate = [x: number, y: number];
+import { Position2D } from '@/types/agent'
 
 const props = defineProps<{
   agent: string | null
@@ -24,16 +23,16 @@ const agentData = computed(() => {
 
 function onControlDirection(direction: string) {
   // passing to backend
-  mainStore.socket?.emit('agentCmd:direction', props.agent, direction);
+  mainStore.socket?.emit('agentCmd:direction', agentData.value?.id, direction);
 }
 
 function onNavigate() {
   // check if the position is valid (format: x,y)
   if (targetPosition.value.match(/,/g)?.length !== 1) return;
 
-  const position: PositionCoordinate = targetPosition.value.split(',')
-    .map((coord) => parseFloat(coord));
-  mainStore.socket?.emit('agentCmd:targetPosition', props.agent, position);
+  const position: Position2D = targetPosition.value.split(',')
+    .map((coord) => parseFloat(coord)) as Position2D;
+  mainStore.socket?.emit('agentCmd:targetPosition', agentData.value?.id, position);
 
   targetPosition.value = '';
 }
@@ -60,11 +59,11 @@ function onNavigate() {
     </div>
     <div class="mt-4 space-y-0.5">
       <div>Position: <span class="font-medium">
-        {{ agentData?.odom.position.x ?? '-' }}, {{ agentData?.odom.position.y ?? '-' }}
+        {{ agentData?.position?.[0] ?? '-' }}, {{ agentData?.position?.[1] ?? '-' }}
       </span></div>
-      <div>Orientation: <span class="font-medium">{{ agentData?.odom.orientation.z ?? '-' }} rad</span></div>
-      <div>Linear vel: <span class="font-medium">{{ agentData?.linearVelocity.x ?? '-' }} m/s</span></div>
-      <div>Angular vel: <span class="font-medium">{{ agentData?.angularVelocity.z ?? '-' }} rad/s</span></div>
+      <div>Orientation: <span class="font-medium">{{ agentData?.heading ?? '-' }} rad</span></div>
+      <div>Linear vel: <span class="font-medium">{{ agentData?.linearVelo ?? '-' }} m/s</span></div>
+      <div>Angular vel: <span class="font-medium">{{ agentData?.angularVelo ?? '-' }} rad/s</span></div>
     </div>
     <div class="mt-8">
       <h2 class="text-lg font-medium">Actions</h2>

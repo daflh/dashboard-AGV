@@ -4,7 +4,7 @@ import { useMainStore } from "@/stores/main";
 import SelectButton from "primevue/selectbutton";
 import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
-import AgentStatusCard from "@/components/pages/Status/AgentStatusCard.vue"; // Import the AgentStatusCard component
+import AgentStatusCard from "@/components/pages/Status/AgentStatusCard.vue";
 
 // Filter options for agent status
 const filterOptions = [

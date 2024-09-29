@@ -1,4 +1,4 @@
-export default interface SlamMap {
+export interface SlamMap {
   width: number;
   height: number;
   resolution: number;

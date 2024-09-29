@@ -1,12 +1,20 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'http';
+import { Server as SocketServer, Socket } from 'socket.io';
 import { EventEmitter } from 'events';
 
 class WebSocketService {
-  private io: Server;
+  private socketServerOpts: object;
+  public io: SocketServer;
   private eventEmitter: EventEmitter;
 
-  constructor(io: Server) {
-    this.io = io;
+  constructor(httpServer: Server) {
+    this.socketServerOpts = {
+      cors: {
+        origin: '*', 
+        methods: ['GET', 'POST']
+      }
+    };
+    this.io = new SocketServer(httpServer, this.socketServerOpts);
     this.eventEmitter = new EventEmitter();
 
     this.io.on('connection', this.handleClientConnection.bind(this));

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { Socket } from 'socket.io-client'
-import { Agent, SlamMap } from '@/types'
+import { Agent } from '@/types/agent'
+import { SlamMap } from '@/types/slam'
 
 interface MainState {
   socket: Socket | null,
