@@ -53,7 +53,7 @@ class AgentsCommService {
       this.eventEmitter.emit('statusData', agentId, {
         linearVelo: data?.cmd_vel?.linear?.x ?? 0,
         angularVelo: data?.cmd_vel?.angular?.z ?? 0,
-        position: data?.odom?.position ?? null
+        position: data?.odom?.position ? [data.odom.position.x, data.odom.position.y] : null
       });
     });
 
