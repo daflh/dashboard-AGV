@@ -37,11 +37,7 @@ const toggleCheckPortStatus = () => {
       />
       <Dialog v-model:visible="displayCheckPortStatus" header="Port Status" modal>
         <div class="flex flex-col gap-4 w-96 p-1 bg-white">
-          <!-- Pass the entire portStatus object to AgentPortStatus component -->
-          <AgentPortStatus v-if="agent.portStatus" :portStatus="agent.portStatus" />
-          <div v-else>
-            <p>No port status available.</p>
-          </div>
+          <AgentPortStatus :portStatus="agent.portStatus ?? {}" />
         </div>
       </Dialog>
     </div>
