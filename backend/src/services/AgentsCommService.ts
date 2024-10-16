@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import AutoReconnectTCPClient from './AutoReconnectTCPClient';
 import { toFloatStr } from '../utils/numberUtils';
 import { AgentConfiguration, Position2D } from '../models/agent';
+import { connect } from 'http2';
 
 class AgentsCommService {
   static STATUS_DATA_PORT = 48101;
@@ -40,14 +41,55 @@ class AgentsCommService {
     const controlCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.CONTROL_CMD_PORT);
     const navigationCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.NAVIGATION_CMD_PORT);
 
+    const portStatus = {
+      data: false,
+      // map: false,
+      control: false,
+      navigation: false
+    };
+
+
     statusDataClient.on('connect', () => {
+      portStatus.data=true;
       this.eventEmitter.emit('statusData', agentId, { status: 'idle' });
     });
 
     statusDataClient.on('close', () => {
+      portStatus.data=false;
       this.eventEmitter.emit('statusData', agentId, { status: 'offline' });
     });
 
+    // mapDataClient.on('connect', () => {
+    //   portStatus.map = true;
+    //   this.eventEmitter.emit('statusData', agentId, { portStatus });
+    // });
+  
+    // mapDataClient.on('close', () => {
+    //   portStatus.map = false;
+    //   this.eventEmitter.emit('statusData', agentId, { portStatus });
+    // });
+
+    controlCmdClient.on('connect', () => {
+      portStatus.control = true;
+      this.eventEmitter.emit('statusData', agentId, { portStatus });
+    });
+  
+    controlCmdClient.on('close', () => {
+      portStatus.control = false;
+      this.eventEmitter.emit('statusData', agentId, { portStatus });
+    });
+  
+    navigationCmdClient.on('connect', () => {
+      portStatus.navigation = true;
+      this.eventEmitter.emit('statusData', agentId, { portStatus });
+    });
+  
+    navigationCmdClient.on('close', () => {
+      portStatus.navigation = false;
+      this.eventEmitter.emit('statusData', agentId, { portStatus });
+    });
+
+    
     statusDataClient.on('data', (rawData) => {
       const data = JSON.parse(rawData.toString());
       this.eventEmitter.emit('statusData', agentId, {

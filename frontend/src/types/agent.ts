@@ -50,6 +50,12 @@ export interface AgentCondition {
   position?: Position2D
   linearVelo?: number // m/s
   angularVelo?: number // m/s
+  portStatus?: {
+    data: boolean
+    // map: boolean
+    control: boolean
+    navigation: boolean
+  }
 }
 
 export type Agent = AgentConfiguration & AgentCondition

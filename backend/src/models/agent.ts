@@ -28,6 +28,7 @@ export interface AgentRawIMU {
 
 export type AgentStatus = 'active' | 'idle' | 'offline'
 
+
 // obtained from database
 export interface AgentConfiguration {
   id: number
@@ -50,6 +51,13 @@ export interface AgentCondition {
   position?: Position2D
   linearVelo?: number // m/s
   angularVelo?: number // m/s
+  //PORT STATUS
+  portStatus?: {
+    data: boolean
+    // map: boolean
+    control: boolean
+    navigation: boolean
+  }
 }
 
 export type Agent = AgentConfiguration & AgentCondition

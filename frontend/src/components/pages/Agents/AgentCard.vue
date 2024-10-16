@@ -8,15 +8,21 @@ import Button from "primevue/button";
 import StatusIcon from "@/components/icon/StatusIcon.vue";
 import EditIcon from "@/components/icon/EditIcon.vue";
 import MapAndControlIcon from "@/components/icon/MapAndControlIcon.vue";
-import { Agent } from '@/types/agent';
+import { Agent } from "@/types/agent";
+import AgentPortStatus from "./AgentPortStatus.vue"; // Import the AgentPortStatus component
 
 defineProps<{
   agent: Agent;
 }>();
+
 const displayEditAgentDialog = ref(false); // Dialog visibility
+const displayCheckPortStatus = ref(false); // Dialog visibility
 
 const toggleEditAgentDialog = () => {
   displayEditAgentDialog.value = !displayEditAgentDialog.value;
+};
+const toggleCheckPortStatus = () => {
+  displayCheckPortStatus.value = !displayCheckPortStatus.value;
 };
 </script>
 
@@ -24,7 +30,20 @@ const toggleEditAgentDialog = () => {
   <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 min-w-[15rem]">
     <div class="flex justify-between mb-1">
       <div class="text-lg font-medium">{{ agent.name }}</div>
-      <AgentStatus :status="agent.status || 'offline'" />
+      <AgentStatus
+        :status="agent.status || 'offline'"
+        @click="toggleCheckPortStatus"
+        class="cursor-pointer"
+      />
+      <Dialog v-model:visible="displayCheckPortStatus" header="Port Status" modal>
+        <div class="flex flex-col gap-4 w-96 p-1 bg-white">
+          <!-- Pass the entire portStatus object to AgentPortStatus component -->
+          <AgentPortStatus v-if="agent.portStatus" :portStatus="agent.portStatus" />
+          <div v-else>
+            <p>No port status available.</p>
+          </div>
+        </div>
+      </Dialog>
     </div>
     <div class="font-medium text-sm text-slate-700">
       {{ agent.site }}
