@@ -1,16 +1,12 @@
-import { Server } from "http";
-import { Socket } from "socket.io";
-import WebSocketService from "./services/WebSocketService";
-import MapProviderService, { MapData } from "./services/MapProviderService";
-import AgentsCommService from "./services/AgentsCommService";
-import DatabaseService from "./services/DatabaseService";
-import DummyAgentsGenerator from "./services/DummyAgentsGenerator";
-import {
-  AgentCondition,
-  AgentConfiguration,
-  AgentsObj,
-  Position2D,
-} from "./models/agent";
+import { Server } from 'http';
+import { Socket } from 'socket.io';
+import { PNG } from 'pngjs';
+import WebSocketService from './services/WebSocketService';
+import MapProviderService, { MapData } from './services/MapProviderService';
+import AgentsCommService from './services/AgentsCommService';
+import DatabaseService from './services/DatabaseService';
+import DummyAgentsGenerator from './services/DummyAgentsGenerator';
+import { AgentCondition, AgentConfiguration, AgentsObj } from "./models/agent";
 
 const MAP_NAME = "basement"; // should not be hard-coded
 const USE_DUMMY_AGENTS = false; // for development & testing purpose
@@ -56,7 +52,7 @@ export default function startServices(httpServer: Server) {
         }
       }
     } catch (error) {
-      console.error("Failed to update agents from database:", error);
+      console.error("Failed to update agents from database", error);
     }
   }
 
@@ -75,6 +71,45 @@ export default function startServices(httpServer: Server) {
         .to("authenticatedRoom")
         .emit("agent:updated", agentId, agents[agentId]); // Emit the full agent data
     }
+  });
+
+  agentsCommService.onMapData(async (agentId, mapData: any) => {
+    const pixels = mapData.map_matrix;
+    const maxVal = 100;
+    const pngFile = new PNG({
+      width: mapData.width,
+      height: mapData.height
+    });
+    const chunks: any[] = [];
+  
+    for (let y = 0; y < pngFile.height; y++) {
+      for (let x = 0; x < pngFile.width; x++) {
+        const idx = (pngFile.width * y + x)
+        const pngIdx = idx << 2
+        let pixel = 255 - (pixels[y][x] / maxVal * 255)
+        if (pixels[y][x] === -1) pixel = 0
+  
+        pngFile.data[pngIdx] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 3] = pixels[y][x] >= 0 ? 0xff : 0x00
+      }
+    }
+
+    // console.log('receiving map')
+    pngFile.pack();
+    pngFile.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    pngFile.on('end', () => {
+      webSocketService.io.to('authenticatedRoom').emit('agent:mapUpdated', agentId, {
+        width: mapData.width,
+        height: mapData.height,
+        resolution: mapData.resolution,
+        origin: [0, 0, 0],
+        content: Buffer.concat(chunks).toString('base64')
+      });
+    });    
   });
 
   if (USE_DUMMY_AGENTS) {
@@ -148,15 +183,13 @@ export default function startServices(httpServer: Server) {
         agentControlState.agentId = null;
       }
     }, 500);
-
-    socket.on(
-      "agentCmd:targetPosition",
-      (agentId: number, position: Position2D) => {
-        agentsCommService.sendNavigationCmd(agentId, position);
-      }
-    );
-
-    socket.on("slamMap:get", (cb: (mapData: MapData | null) => void) => {
+  
+    socket.on('agentCmd:targetPosition', (agentId: number, positionStr: string) => {
+      // console.log('received target position', positionStr);
+      agentsCommService.sendNavigationCmd(agentId, positionStr);
+    });
+    
+    socket.on('slamMap:get', (cb: (mapData: MapData | null) => void) => {
       const mapData = mapProviderService.getMap();
       cb(mapData);
     });

@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 import { useMainStore } from '@/stores/main';
 import { Agent, AgentCondition } from '@/types/agent';
-import { SlamMap } from '@/types/slam';
+// import { SlamMap } from '@/types/slam';
 
 const HOSTNAME = window.location.host.split(':')[0];
 
@@ -23,11 +23,15 @@ function initializeSocket() {
     }
   });
 
-  socket.emit('slamMap:get', (slamMapData: SlamMap | null) => {
-    if (slamMapData !== null) {
-      mainStore.slamMap = slamMapData;
-    }
+  socket.on('agent:mapUpdated', (agentId: number, mapData) => {
+    mainStore.slamMap = mapData;
   });
+
+  // socket.emit('slamMap:get', (slamMapData: SlamMap | null) => {
+  //   if (slamMapData !== null) {
+  //     mainStore.slamMap = slamMapData;
+  //   }
+  // });
 
   mainStore.socket = socket;
 }

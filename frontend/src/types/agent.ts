@@ -52,7 +52,7 @@ export interface AgentCondition {
   angularVelo?: number // m/s
   portStatus?: {
     data: boolean
-    // map: boolean
+    map: boolean
     control: boolean
     navigation: boolean
   }

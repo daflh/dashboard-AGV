@@ -54,7 +54,7 @@ export interface AgentCondition {
   //PORT STATUS
   portStatus?: {
     data: boolean
-    // map: boolean
+    map: boolean
     control: boolean
     navigation: boolean
   }

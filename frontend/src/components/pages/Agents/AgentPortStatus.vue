@@ -17,14 +17,22 @@ const statusObject = {
     color: 'text-red-500'
   }
 };
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 </script>
 
 <template>
-  <div>
+  <div class="mb-3">
     <!-- Loop through the portStatus object -->
-    <div v-for="(status, port) in portStatus" :key="port" class="flex items-center">
-      <div class="mr-1.5 mt-2 text-sm" :class="statusObject[status].color">⬤</div>
-      <div class="text-[.925rem] font-medium mt-2">{{ port }}: {{ statusObject[status].text }}</div>
+    <div v-for="(status, portName) in portStatus" :key="portName" class="flex items-center space-y-1">
+      <div class="font-medium w-28">{{ capitalize(portName) }}</div>
+      <div class="ml-4">
+        <span class="mr-1" :class="statusObject[status].color">⬤</span>
+        {{ statusObject[status].text }}
+      </div>
     </div>
   </div>
 </template>

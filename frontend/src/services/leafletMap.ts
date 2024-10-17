@@ -45,7 +45,7 @@ class LeafletMap {
     this.slamMapLayer.setUrl(slamMapImg);
     
     // set view to the center of SLAM map
-    this.map.setView(slamMapBounds.getCenter(), 10);
+    this.map.setView(slamMapBounds.getCenter(), 11);
   }
 
   public setAgents(agents: Agent[]) {

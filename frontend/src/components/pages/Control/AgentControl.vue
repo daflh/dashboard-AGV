@@ -6,7 +6,6 @@ import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
-import { Position2D } from '@/types/agent'
 
 const props = defineProps<{
   agent: string | null
@@ -27,12 +26,15 @@ function onControlDirection(direction: string) {
 }
 
 function onNavigate() {
-  // check if the position is valid (format: x,y)
-  if (targetPosition.value.match(/,/g)?.length !== 1) return;
+  // // check if the position is valid (format: x,y)
+  // if (targetPosition.value.match(/,/g)?.length !== 1) return;
 
-  const position: Position2D = targetPosition.value.split(',')
-    .map((coord) => parseFloat(coord)) as Position2D;
-  mainStore.socket?.emit('agentCmd:targetPosition', agentData.value?.id, position);
+  // const position: Position2D = targetPosition.value.split(',')
+  //   .map((coord) => parseFloat(coord)) as Position2D;
+  
+  // TODO: add validation for the position
+  const targetPosFormatted = targetPosition.value.replace(/ /g, ',');
+  mainStore.socket?.emit('agentCmd:targetPosition', agentData.value?.id, targetPosFormatted);
 
   targetPosition.value = '';
 }
@@ -72,6 +74,7 @@ function onNavigate() {
           v-model="targetPosition"
           placeholder="Enter coordinate"
           class="w-[15rem] !rounded-r-none !border-r-0"
+          @keyup="(evt) => { if (evt.key === 'Enter') onNavigate(); }"
         />
         <Button
           type="button"

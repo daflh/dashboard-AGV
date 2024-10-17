@@ -4,24 +4,30 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// // TODO: implement the MySQL database service
 class DatabaseService {
-  private pool: mysql.Pool;
+  private pool: mysql.Pool | null;
 
   constructor() {
-    // Create a connection pool to the MySQL database using environment variables
-    this.pool = mysql.createPool({
-      host: process.env.DB_HOST, // Load from .env
-      user: process.env.DB_USER, // Load from .env
-      password: process.env.DB_PASSWORD, // Load from .env
-      database: process.env.DB_NAME, // Load from .env
-      connectionLimit: 10,
-      queueLimit: 0,
-    });
+    try {
+      // Create a connection pool to the MySQL database using environment variables
+      this.pool = mysql.createPool({
+        host: process.env.DB_HOST, // Load from .env
+        user: process.env.DB_USER, // Load from .env
+        password: process.env.DB_PASSWORD, // Load from .env
+        database: process.env.DB_NAME, // Load from .env
+        connectionLimit: 10,
+        queueLimit: 0,
+      });
+    } catch (err) {
+      console.error('Error connecting to MySQL database:', err);
+      this.pool = null;
+    }
   }
 
   // Method to fetch agents from the database
   public async getAgents(): Promise<AgentConfiguration[]> {
+    if (!this.pool) return [];
+
     try {
       const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM agents');
       const agents: AgentConfiguration[] = []
@@ -45,6 +51,7 @@ class DatabaseService {
   }
 
   public closePool() {
+    if (!this.pool) return;
     this.pool.end();
   }
 }
