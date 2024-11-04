@@ -1,62 +1,91 @@
-import mysql from 'mysql2/promise';
+import { PrismaClient } from '@prisma/client';
 import { AgentConfiguration } from '../models/agent';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-class DatabaseService {
-  private pool: mysql.Pool | null;
+export default class DatabaseService {
+  private prisma: PrismaClient;
 
   constructor() {
-    try {
-      // Create a connection pool to the MySQL database using environment variables
-      this.pool = mysql.createPool({
-        host: process.env.DB_HOST, // Load from .env
-        user: process.env.DB_USER, // Load from .env
-        password: process.env.DB_PASSWORD, // Load from .env
-        database: process.env.DB_NAME, // Load from .env
-        connectionLimit: 10,
-        queueLimit: 0,
-      });
-    } catch (err) {
-      console.error('Error connecting to MySQL database:', err);
-      this.pool = null;
-    }
+    this.prisma = new PrismaClient();
   }
 
-  // Method to fetch agents from the database
+  // Fetch all agents from the database
   public async getAgents(): Promise<AgentConfiguration[]> {
-    if (!this.pool) return [];
-
     try {
-      const [rows] = await this.pool.query<mysql.RowDataPacket[]>('SELECT * FROM agents');
-      const agents: AgentConfiguration[] = []
-      rows.forEach((row) => {
-        agents.push({
-          id: row.id,
-          name: row.name,
-          description: row.description,
-          ipAddress: row.ip_address, // IPv4
-          hsmKey: row.hsm_key,
-          siteId: row.site_id,
-          companyId: row.company_id,
-          lastMaintenance: row.last_maintenance // unix timestamp
-        })
-      })
-      return agents; 
+      const agents = await this.prisma.agents.findMany();
+      return agents.map(agent => ({
+        id: agent.id,
+        name: agent.name ?? "",                   
+        description: agent.description ?? "",      
+        ipAddress: agent.ip_address ?? "127.0.0.1",
+        hsmKey: agent.hsm_key ?? null,             
+        siteId: agent.site_id,
+        companyId: agent.company_id ?? 1,         
+        lastMaintenance: agent.last_maintenance?.getTime() ?? 0, 
+      }));
     } catch (error) {
       console.error('Error fetching agents:', error);
       throw error;
     }
   }
 
-  public closePool() {
-    if (!this.pool) return;
-    this.pool.end();
+  // Add a new agent to the database
+  public async addAgent(agent: AgentConfiguration): Promise<void> {
+    try {
+      await this.prisma.agents.create({
+        data: {
+          name: agent.name,
+          description: agent.description || "",
+          ip_address: agent.ipAddress ?? "",
+          hsm_key: agent.hsmKey || null,
+          site_id: agent.siteId || 1, //masih kukasih default 1, karena nanti dibikin dropdown                     
+          company_id: agent.companyId || 1,           
+          last_maintenance: agent.lastMaintenance ? new Date(agent.lastMaintenance) : new Date(),
+          next_maintenance: new Date(),
+        },
+      });
+      console.log('Agent added successfully');
+    } catch (error) {
+      console.error('Error adding new agent:', error);
+      throw error;
+    }
+  }
+
+  // Edit an existing agent in the database
+  public async editAgent(agent: AgentConfiguration): Promise<void> {
+    try {
+      const result = await this.prisma.agents.update({
+        where: { id: agent.id },
+        data: {
+          name: agent.name,
+          description: agent.description || "",
+          ip_address: agent.ipAddress ?? "", 
+          hsm_key: agent.hsmKey || null,
+          site_id: agent.siteId,                      
+          company_id: agent.companyId || 1,         
+          last_maintenance: agent.lastMaintenance ? new Date(agent.lastMaintenance) : null,
+          next_maintenance: new Date(),
+        },
+      });
+
+      if (!result) {
+        console.warn(`No agent found with id ${agent.id}`);
+      } else {
+        console.log(`Agent with id ${agent.id} successfully updated`);
+      }
+    } catch (error) {
+      console.error('Error updating agent:', error);
+      throw error;
+    }
+  }
+
+  // Close the Prisma client connection
+  public async closeConnection() {
+    await this.prisma.$disconnect();
   }
 }
 
-export default DatabaseService;
+
+
 
 // import { AgentConfiguration, AgentCondition } from "../models/agent";
 

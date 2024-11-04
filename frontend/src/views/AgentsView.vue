@@ -8,6 +8,21 @@ import InputText from "primevue/inputtext";
 import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentCard from "@/components/pages/Agents/AgentCard.vue";
+import { Agent } from '@/types/agent';
+
+// Access mainStore to get the shared socket instance
+const mainStore = useMainStore();
+const { socket } = mainStore;
+
+// Form data for the new agent
+const agentName = ref("");
+const agentIpAddress = ref("");
+const agentHsmKey = ref("");
+const agentRegisterPlant = ref("");
+
+// Socket response messages
+const successMessage = ref("");
+const errorMessage = ref("");
 
 // Filter options for agent status
 const filterOptions = [
@@ -16,28 +31,61 @@ const filterOptions = [
   { label: "Offline", value: "offline" },
 ];
 
-const mainStore = useMainStore();
 const searchValue = ref("");
 const selectedTags = ref<string[]>([]);
 const displayAddAgentDialog = ref(false);
 
+// Filtered agents logic
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
     const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
-    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status!);
+    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status ?? '');
     return matchesSearch && matchesTags;
   });
 });
 
-
+// Toggle the dialog visibility
 const toggleAddAgentDialog = () => {
   displayAddAgentDialog.value = !displayAddAgentDialog.value;
 };
+// Handle agent submission
+const submitAgent = () => {
+  const newAgent = {
+    name: agentName.value,
+    ipAddress: agentIpAddress.value,
+    hsmKey: agentHsmKey.value,
+    siteId: agentRegisterPlant.value,
+  };
+
+  // Add null check for socket before emitting
+  if (socket !== null) {
+    socket.emit('agent:add', newAgent, (response: { success: boolean, message: string }) => {
+      if (response.success) {
+        // successMessage.value = response.message;
+        toggleAddAgentDialog();
+         socket.emit('agent:getAll', (agentsData: Agent[]) => {
+          mainStore.agents = agentsData;
+        });
+      } else {
+        // errorMessage.value = response.message;
+      }
+    });
+  } else {
+    // Handle case when socket is null
+    errorMessage.value = "Socket connection is not available";
+    console.error("Socket is null, unable to submit agent");
+  }
+};
+
 </script>
 
 <template>
   <UserLayout>
     <div class="container mx-auto py-8 px-20">
+      <!-- Success/Error Messages -->
+      <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
+      <div v-if="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
       <div class="flex justify-between mb-7">
         <div class="flex space-x-5">
           <AgentSearchFilter v-model="searchValue" />
@@ -64,24 +112,24 @@ const toggleAddAgentDialog = () => {
               <div class="flex flex-col space-y-3 w-full">
                 <div>
                   <h1 class="font-medium mb-1">Agent Name</h1>
-                  <InputText placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
+                  <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
                 </div>
                 <div>
                   <h1 class="font-medium mb-1">IP Address</h1>
-                  <InputText placeholder="Enter IP Address" class="w-full p-2 border rounded" />
+                  <InputText v-model="agentIpAddress" placeholder="Enter IP Address" class="w-full p-2 border rounded" />
                 </div>
                 <div>
                   <h1 class="font-medium mb-1">HSM Key</h1>
-                  <InputText placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
+                  <InputText v-model="agentHsmKey" placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
                 </div>
                 <div>
                   <h1 class="font-medium mb-1">Register Plant</h1>
-                  <InputText placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+                  <InputText v-model="agentRegisterPlant" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
                 </div>
                 <Button
                   label="Submit"
                   class="!mt-5 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
-                  @click="toggleAddAgentDialog"
+                  @click="submitAgent"
                 />
               </div>
             </div>
