@@ -5,7 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node launch.js"
+    "start": "npm run dev",
+    "dev": "node launch.js",
+    "prod": "node launch.js --prod"
   },
   "keywords": [],
   "author": "",

@@ -10,7 +10,7 @@ export default defineConfig({
   assetsInclude: ['**/*.mp4', '**/*.mkv'],
   server: {
     host: process.env.HOST || '0.0.0.0',
-    port: process.env.PORT ? parseInt(process.env.PORT) : 5000
+    port: process.env.PORT ? parseInt(process.env.PORT) : 8000
   },
   resolve: {
     alias: {

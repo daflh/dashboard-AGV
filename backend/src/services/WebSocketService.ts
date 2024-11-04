@@ -10,7 +10,7 @@ class WebSocketService {
   constructor(httpServer: Server) {
     this.socketServerOpts = {
       cors: {
-        origin: '*', 
+        origin: '*',
         methods: ['GET', 'POST']
       }
     };

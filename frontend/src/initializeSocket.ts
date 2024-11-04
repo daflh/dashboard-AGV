@@ -3,10 +3,19 @@ import { useMainStore } from '@/stores/main';
 import { Agent, AgentCondition } from '@/types/agent';
 // import { SlamMap } from '@/types/slam';
 
-const HOSTNAME = window.location.host.split(':')[0];
+function getBackendLocation() {
+  const { protocol, host } = window.location;
+  const isProd = import.meta.env['PROD'];
+  const backendPort = import.meta.env['VITE_BACKEND_PORT'] ?? '8001';
+  const backendLocation = isProd
+    ? `${protocol}//${host}`
+    : `${protocol}//${host.split(':')[0]}:${backendPort}`;
+
+  return backendLocation;
+}
 
 function initializeSocket() {
-  const socket = io(`http://${HOSTNAME}:5001`);
+  const socket = io(getBackendLocation());
   const mainStore = useMainStore();
 
   socket.emit('agent:getAll', (agentsData: Agent[]) => {
@@ -27,7 +36,8 @@ function initializeSocket() {
     mainStore.slamMap = mapData;
   });
 
-  // socket.emit('slamMap:get', (slamMapData: SlamMap | null) => {
+  // uncomment this block of code to show the dummy map
+  // socket.emit('slamMap:get', (slamMapData: any) => {
   //   if (slamMapData !== null) {
   //     mainStore.slamMap = slamMapData;
   //   }

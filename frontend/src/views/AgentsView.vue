@@ -24,7 +24,7 @@ const displayAddAgentDialog = ref(false);
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
     const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
-    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status);
+    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status!);
     return matchesSearch && matchesTags;
   });
 });
