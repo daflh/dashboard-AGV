@@ -22,11 +22,11 @@ const togglePopover = (event: Event) => {
 
 <template>
   <div
-    class="flex items-center justify-between bg-slate-100 p-4 border-b shadow border-gray-200 fixed top-0 left-0 w-full z-50"
+    class="flex items-center justify-between bg-slate-100 px-8 py-4 border-b shadow border-gray-200 fixed top-0 left-0 w-full z-50"
   >
     <div class="text-xl text-primaryblue italic ml-4 cursor-default">
-      <span class="font-medium">Logo</span>
-      <span class="font-semibold">Produk</span>
+      <span class="font-medium">e-</span>
+      <span class="font-semibold">Dabot</span>
     </div>
     <div class="flex gap-x-10">
       <RouterLink

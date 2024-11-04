@@ -18,12 +18,12 @@ function submitForm() {
       <div class="max-w-md w-full">
         <div class="flex items-center mb-10">
           <div class="text-2xl text-primaryblue italic cursor-default">
-            <span class="font-medium">Logo</span>
-            <span class="font-semibold">Produk</span>
+            <span class="font-medium">e-</span>
+            <span class="font-semibold">Dabot</span>
           </div>
         </div>
         <h2 class="text-3xl font-bold mb-7 text-center">
-          Stechoq AMR Dashboard
+          AMR Monitoring Dashboard
         </h2>
         <form @submit.prevent="submitForm">
           <div class="mb-4">
@@ -63,11 +63,11 @@ function submitForm() {
     >
       <div class="max-w-full">
         <h2 class="text-3xl font-bold mb-2 text-left w-3/4">
-          Lorem ipsum dolor sit amet, cons ectetur !
+          Optimize Your AMR Operations with e-Dabot!
         </h2>
-        <p class="mb-8 text-left w-3/4">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua.
+        <p class="mb-8 text-left mr-3">
+          Effortlessly monitor and control your autonomous robots in real-time!
+          Track locations, check performance stats, and keep data secure—all in one place.
         </p>
         <div class="w-full h-96 bg-white rounded-lg"></div>
       </div>
