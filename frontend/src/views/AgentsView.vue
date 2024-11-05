@@ -10,21 +10,17 @@ import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentCard from "@/components/pages/Agents/AgentCard.vue";
 import { Agent } from '@/types/agent';
 
-// Access mainStore to get the shared socket instance
 const mainStore = useMainStore();
 const { socket } = mainStore;
 
-// Form data for the new agent
 const agentName = ref("");
 const agentIpAddress = ref("");
 const agentHsmKey = ref("");
 const agentRegisterPlant = ref("");
 
-// Socket response messages
 const successMessage = ref("");
 const errorMessage = ref("");
 
-// Filter options for agent status
 const filterOptions = [
   { label: "Active", value: "active" },
   { label: "Idle", value: "idle" },
@@ -35,7 +31,6 @@ const searchValue = ref("");
 const selectedTags = ref<string[]>([]);
 const displayAddAgentDialog = ref(false);
 
-// Filtered agents logic
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
     const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
@@ -44,11 +39,10 @@ const filteredAgents = computed(() => {
   });
 });
 
-// Toggle the dialog visibility
 const toggleAddAgentDialog = () => {
   displayAddAgentDialog.value = !displayAddAgentDialog.value;
 };
-// Handle agent submission
+
 const submitAgent = () => {
   const newAgent = {
     name: agentName.value,
@@ -57,24 +51,25 @@ const submitAgent = () => {
     siteId: agentRegisterPlant.value,
   };
 
-  // Add null check for socket before emitting
   if (socket !== null) {
     socket.emit('agent:add', newAgent, (response: { success: boolean, message: string }) => {
       if (response.success) {
-        // successMessage.value = response.message;
         toggleAddAgentDialog();
-         socket.emit('agent:getAll', (agentsData: Agent[]) => {
+        socket.emit('agent:getAll', (agentsData: Agent[]) => {
           mainStore.agents = agentsData;
         });
       } else {
-        // errorMessage.value = response.message;
+        errorMessage.value = response.message;
       }
     });
   } else {
-    // Handle case when socket is null
     errorMessage.value = "Socket connection is not available";
     console.error("Socket is null, unable to submit agent");
   }
+};
+
+const handleAgentDeleted = (agentId: number) => {
+  mainStore.agents = mainStore.agents.filter(agent => agent.id !== agentId);
 };
 
 </script>
@@ -82,7 +77,6 @@ const submitAgent = () => {
 <template>
   <UserLayout>
     <div class="container mx-auto py-8 px-20">
-      <!-- Success/Error Messages -->
       <div v-if="successMessage" class="alert alert-success">{{ successMessage }}</div>
       <div v-if="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
 
@@ -138,9 +132,10 @@ const submitAgent = () => {
       </div>
       <div class="content-grid gap-6">
         <AgentCard
-          v-for="agent of filteredAgents"
+          v-for="agent in filteredAgents"
           :key="agent.name"
           :agent="agent"
+          @agentDeleted="handleAgentDeleted"
         />
       </div>
     </div>

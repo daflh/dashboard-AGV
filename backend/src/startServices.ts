@@ -125,6 +125,25 @@ export default function startServices(httpServer: Server) {
   webSocketService.onClientConnection((socket: Socket) => {
     socket.join("authenticatedRoom");
 
+
+    // Delete agent request
+    socket.on("agent:delete", async (agentId: number, callback) => {
+      try {
+        await databaseService.deleteAgent(agentId);
+        callback({ success: true, message: `Agent with ID ${agentId} deleted successfully.` });
+
+        // Update local agent cache and notify all clients of deletion
+        delete agents[agentId];
+        webSocketService.io.to("authenticatedRoom").emit("agent:deleted", agentId);
+
+        // Optionally, refresh the list of agents
+        await updateAgentsFromDatabase();
+      } catch (error) {
+        console.error("Error deleting agent:", error);
+        callback({ success: false, message: "Failed to delete agent." });
+      }
+    });
+
     // Handle add agent request
     socket.on("agent:add", async (newAgent: AgentConfiguration, callback) => {
       try {

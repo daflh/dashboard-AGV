@@ -78,6 +78,19 @@ export default class DatabaseService {
     }
   }
 
+    // Method to delete an agent by ID
+  public async deleteAgent(agentId: number): Promise<void> {
+    try {
+      await this.prisma.agents.delete({
+        where: { id: agentId },
+      });
+      console.log(`Agent with ID ${agentId} deleted successfully.`);
+    } catch (error) {
+      console.error(`Error deleting agent with ID ${agentId}:`, error);
+      throw error;
+    }
+  }
+
   // Close the Prisma client connection
   public async closeConnection() {
     await this.prisma.$disconnect();

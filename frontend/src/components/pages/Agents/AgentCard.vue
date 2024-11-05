@@ -12,6 +12,10 @@ import { Agent } from "@/types/agent";
 import AgentPortStatus from "./AgentPortStatus.vue";
 import { useMainStore } from "@/stores/main";
 
+const emit = defineEmits<{
+  (e: "agentDeleted", agentId: number): void;
+}>();
+
 const props = defineProps<{
   agent: Agent | null;
 }>();
@@ -19,13 +23,11 @@ const props = defineProps<{
 const mainStore = useMainStore();
 const { socket } = mainStore;
 
-// Refs for form fields with optional chaining
 const agentName = ref(props.agent?.name || "");
 const agentIpAddress = ref(props.agent?.ipAddress || "");
 const agentHsmKey = ref(props.agent?.hsmKey || "");
 const agentSite = ref(props.agent?.site || "");
 
-// Dialog visibility states
 const displayEditAgentDialog = ref(false);
 const displayCheckPortStatus = ref(false);
 
@@ -38,7 +40,7 @@ const toggleCheckPortStatus = () => {
 };
 
 const submitEditAgent = () => {
-  if (!props.agent) return; // Early return if agent is null
+  if (!props.agent) return;
 
   const updatedAgent = {
     ...props.agent,
@@ -48,7 +50,6 @@ const submitEditAgent = () => {
     site: parseInt(agentSite.value, 10),
   };
 
-  // Check if socket is available before emitting
   if (socket) {
     socket.emit("agent:edit", updatedAgent, (response: { success: boolean; message: string }) => {
       if (response.success) {
@@ -56,11 +57,27 @@ const submitEditAgent = () => {
       } else {
         console.error("Failed to update agent:", response.message);
       }
-      toggleEditAgentDialog(); // Close the dialog on success
+      toggleEditAgentDialog();
     });
   } else {
     console.error("Socket connection is not available.");
   }
+};
+
+const deleteAgent = () => {
+  if (!props.agent || !socket) return;
+
+  const agentId = props.agent.id;
+
+  socket.emit("agent:delete", agentId, (response: { success: boolean; message: string }) => {
+    if (response.success) {
+      console.log("Agent deleted successfully");
+      toggleEditAgentDialog();
+      emit("agentDeleted", agentId); // Emit event to parent
+    } else {
+      console.error("Failed to delete agent:", response.message);
+    }
+  });
 };
 
 </script>
@@ -108,11 +125,10 @@ const submitEditAgent = () => {
               <h1 class="mt-2 font-medium">New Register Plant</h1>
               <InputText v-model="agentSite" placeholder="Enter New Register Plant" class="p-2 border rounded" />
               
-              <Button
-                label="Submit"
-                class="mt-6 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
-                @click="submitEditAgent"
-              />
+              <div class="flex justify-end mt-4">
+                <Button label="Delete" class="mr-4 px-4 py-2 w-fit !rounded-xl !h-10 !bg-red-500 !border-red-500 text-white" @click="deleteAgent" />
+                <Button label="Submit" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white" @click="submitEditAgent" />
+              </div>
             </div>
           </div>
         </Dialog>
