@@ -12,7 +12,7 @@ export default class DatabaseService {
   public async getAgents(): Promise<AgentConfiguration[]> {
     try {
       const agents = await this.prisma.agents.findMany();
-      return agents.map(agent => ({
+      return agents.map((agent: any) => ({
         id: agent.id,
         name: agent.name ?? "",                   
         description: agent.description ?? "",      

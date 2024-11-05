@@ -7,13 +7,15 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "node launch.js",
-    "prod": "node launch.js --prod"
+    "prod": "node launch.js --prod",
+    "build:fe": "(cd frontend && npm run build)",
+    "build:be": "(cd backend && npm run build)",
+    "build": "npm run build:fe && npm run build:be"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "compressjs": "^1.0.3",
     "concurrently": "^9.0.1"
   }
 }

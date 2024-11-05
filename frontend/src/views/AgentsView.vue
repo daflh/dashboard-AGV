@@ -101,7 +101,7 @@ const handleAgentDeleted = (agentId: number) => {
             @click="toggleAddAgentDialog"
             class="!bg-primaryblue !border-primaryblue"
           />
-          <Dialog v-model:visible="displayAddAgentDialog" header="Add New Agent" modal>
+          <Dialog v-model:visible="displayAddAgentDialog" header="Add New Agent" :draggable="false" modal>
             <div class="flex flex-col gap-4 w-96 p-1 bg-white">
               <div class="flex flex-col space-y-3 w-full">
                 <div>
