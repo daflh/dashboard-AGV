@@ -74,14 +74,14 @@ const submitEditAgent = () => {
         @click="toggleCheckPortStatus"
         class="cursor-pointer"
       />
-      <Dialog v-model:visible="displayCheckPortStatus" header="Port Status" modal>
+      <Dialog v-model:visible="displayCheckPortStatus" header="Port Status" :draggable="false" modal>
         <div class="flex flex-col gap-4 w-96 p-1 bg-white">
           <AgentPortStatus :portStatus="props.agent?.portStatus ?? {}" />
         </div>
       </Dialog>
     </div>
     <div class="font-medium text-sm text-slate-700">
-      {{ props.agent?.site || '' }}
+      {{ props.agent?.site || 'Unknown site' }} – {{ props.agent?.ipAddress || 'Unknown host' }}
     </div>
     <hr class="my-3" />
     <div class="flex justify-around">
@@ -93,7 +93,7 @@ const submitEditAgent = () => {
       </RouterLink>
       <div class="cursor-pointer" title="Edit agent" @click="toggleEditAgentDialog">
         <EditIcon alt="Edit Icon" class="h-6 mr-2" />
-        <Dialog v-model:visible="displayEditAgentDialog" header="Edit Agent" modal>
+        <Dialog v-model:visible="displayEditAgentDialog" header="Edit Agent" :draggable="false" modal>
           <div class="flex flex-col gap-4 w-96 p-1 bg-white">
             <div class="flex flex-col">
               <h1 class="font-medium">New Agent Name</h1>
