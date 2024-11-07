@@ -1,14 +1,35 @@
 <script setup lang="ts">
-import { useRouter, RouterLink } from "vue-router";
-import { ref } from "vue";
+import { useRouter, useRoute, RouterLink } from "vue-router";
+import { ref, computed } from "vue";
 import Popover from "primevue/popover";
 import AgentsIcon from "@/components/icon/AgentsIcon.vue";
 import StatusIcon from "@/components/icon/StatusIcon.vue";
 import MapAndControlIcon from "@/components/icon/MapAndControlIcon.vue";
 import ProfileSettingIcon from "@/components/icon/ProfileSettingIcon.vue";
 
+const menus = [
+  {
+    label: 'Agents',
+    icon: AgentsIcon,
+    route: { name: 'agents' }
+  },
+  {
+    label: 'Status',
+    icon: StatusIcon,
+    route: { name: 'status' }
+  },
+  {
+    label: 'Map & Control',
+    icon: MapAndControlIcon,
+    route: { name: 'control' }
+  }
+];
+
 const router = useRouter();
+const route = useRoute();
+
 const op = ref<typeof Popover | null>(null); // Pastikan ref bisa berupa null awalnya
+const activeRoute = computed(() => route.name);
 
 const logout = () => {
   localStorage.removeItem("isLoggedIn");
@@ -22,36 +43,23 @@ const togglePopover = (event: Event) => {
 
 <template>
   <div
-    class="flex items-center justify-between bg-slate-100 px-8 py-4 border-b shadow border-gray-200 fixed top-0 left-0 w-full z-50"
+    class="flex items-center justify-between h-20 bg-slate-100 px-8 border-b shadow border-gray-200 fixed top-0 left-0 w-full z-50"
   >
     <div class="text-xl text-primaryblue italic ml-4 cursor-default">
       <span class="font-medium">e-</span>
       <span class="font-semibold">Dabot</span>
     </div>
-    <div class="flex gap-x-10">
+    <div class="flex gap-x-4">
       <RouterLink
-        class="flex items-center text-primaryblue font-semibold h-6"
-        to="/agents"
+        v-for="menu in menus"
+        :key="menu.label"
+        class="flex items-center text-primaryblue relative px-3 py-2 rounded-lg hover:bg-gray-200"
+        :class="activeRoute === menu.route.name ? 'font-semibold' : 'font-medium'"
+        :to="menu.route"
       >
-        <!-- <img src="@/assets/images/agents-icon.svg" alt="Engineer Icon" class="h-6 mr-2" /> -->
-        <AgentsIcon alt="Agents Icon" class="h-6 mr-2" />
-        <div>Agents</div>
-      </RouterLink>
-      <RouterLink
-        class="flex items-center text-primaryblue font-semibold h-6"
-        to="/status"
-      >
-        <!-- <img src="@/assets/images/status-icon.svg" alt="Engineer Icon" class="h-8 mr-2" /> -->
-        <StatusIcon alt="Status Icon" class="h-8 mr-2" />
-        <div>Status</div>
-      </RouterLink>
-      <RouterLink
-        class="flex items-center text-primaryblue font-semibold h-6"
-        to="/control"
-      >
-        <!-- <img src="@/assets/images/map-and-control-icon.svg" alt="Engineer Icon" class="h-6 mr-2" /> -->
-        <MapAndControlIcon alt="Map And Control Icon" class="h-6 mr-2" />
-        <div>Map & Control</div>
+        <component :is="menu.icon" :alt="menu.label + ' Icon'" class="h-6 mr-2" />
+        <div>{{ menu.label }}</div>
+        <div v-show="activeRoute === menu.route.name" class="absolute mx-4 h-2 border-b-[3px] border-orange-400 inset-x-0 top-10"></div>
       </RouterLink>
     </div>
     <div class="flex items-center justify-center relative cursor-pointer" @click="togglePopover">
@@ -65,9 +73,15 @@ const togglePopover = (event: Event) => {
 
       <ProfileSettingIcon alt="Profile Setting" class="mx-4 w-5"  />
 
-      <Popover ref="op" class="!mt-6">
-        <div>
-          <button @click="logout" class="text-primaryred rounded">Logout</button>
+      <Popover ref="op" class="!mt-6 min-w-40">
+        <div class="text-gray-800">
+          <div class="text-[.925rem] mb-0.5">Logged in as</div>
+          <div class="font-semibold">admin</div>
+          <hr class="my-3 bg-gray-800" />
+          <div class="space-y-1">
+            <div class="cursor-pointer">Settings</div>
+            <div class="text-primaryred cursor-pointer" @click="logout">Logout</div>
+          </div>
         </div>
       </Popover>
     </div>

@@ -7,6 +7,7 @@ interface MainState {
   socket: Socket | null,
   slamMap: SlamMap | null,
   agents: Agent[],
+  isAgentsLoaded: boolean,
   controlMapContextMenu: {
     isVisible: boolean,
     anchorPosition: [number, number],
@@ -19,6 +20,7 @@ export const useMainStore = defineStore('main', {
     socket: null,
     slamMap: null,
     agents: [],
+    isAgentsLoaded: false,
     controlMapContextMenu: {
       isVisible: false,
       anchorPosition: [0, 0],

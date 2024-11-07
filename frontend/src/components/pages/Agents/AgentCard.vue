@@ -67,6 +67,9 @@ const submitEditAgent = () => {
 const deleteAgent = () => {
   if (!props.agent || !socket) return;
 
+  const confirmation = confirm("Are you sure you want to delete this agent?");
+  if (!confirmation) return;
+
   const agentId = props.agent.id;
 
   socket.emit("agent:delete", agentId, (response: { success: boolean; message: string }) => {
@@ -85,7 +88,7 @@ const deleteAgent = () => {
 <template>
   <div class="px-5 py-4 shadow-md rounded-md border border-slate-200 min-w-[15rem]">
     <div class="flex justify-between mb-1">
-      <div class="text-lg font-medium">{{ props.agent?.name || '' }}</div>
+      <div class="text-lg font-medium text-gray-800">{{ props.agent?.name || '' }}</div>
       <AgentStatus
         :status="props.agent?.status || 'offline'"
         @click="toggleCheckPortStatus"
@@ -102,32 +105,36 @@ const deleteAgent = () => {
     </div>
     <hr class="my-3" />
     <div class="flex justify-around">
-      <RouterLink to="/status" title="Go to agent status">
+      <RouterLink to="/status" title="Go to agent status" class="text-primaryblue hover:text-orange-900">
         <StatusIcon alt="Status Icon" class="h-6 mr-2" />
       </RouterLink>
-      <RouterLink to="control" title="Go to agent control">
+      <RouterLink to="control" title="Go to agent control" class="text-primaryblue hover:text-orange-900">
         <MapAndControlIcon alt="Map And Control Icon" class="h-5 mr-2" />
       </RouterLink>
-      <div class="cursor-pointer" title="Edit agent" @click="toggleEditAgentDialog">
+      <div class="cursor-pointer text-primaryblue hover:text-orange-900" title="Edit agent" @click="toggleEditAgentDialog">
         <EditIcon alt="Edit Icon" class="h-6 mr-2" />
         <Dialog v-model:visible="displayEditAgentDialog" header="Edit Agent" :draggable="false" modal>
           <div class="flex flex-col gap-4 w-96 p-1 bg-white">
-            <div class="flex flex-col">
-              <h1 class="font-medium">New Agent Name</h1>
-              <InputText v-model="agentName" placeholder="Enter New Agent Name" class="p-2 border rounded" />
-              
-              <h1 class="mt-2 font-medium">New IP Address</h1>
-              <InputText v-model="agentIpAddress" placeholder="Enter New IP Address" class="p-2 border rounded" />
-              
-              <h1 class="mt-2 font-medium">New HSM Key</h1>
-              <InputText v-model="agentHsmKey" placeholder="Enter New HSM Key" class="p-2 border rounded" />
-              
-              <h1 class="mt-2 font-medium">New Register Plant</h1>
-              <InputText v-model="agentSite" placeholder="Enter New Register Plant" class="p-2 border rounded" />
-              
-              <div class="flex justify-end mt-4">
-                <Button label="Delete" class="mr-4 px-4 py-2 w-fit !rounded-xl !h-10 !bg-red-500 !border-red-500 text-white" @click="deleteAgent" />
-                <Button label="Submit" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white" @click="submitEditAgent" />
+            <div class="flex flex-col space-y-3 w-full">
+              <div>
+                <h1 class="font-medium mb-1">Agent Name</h1>
+                <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
+              </div>
+              <div>
+                <h1 class="font-medium mb-1">Register Plant</h1>
+                <InputText v-model="agentSite" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+              </div>
+              <div>
+                <h1 class="font-medium mb-1">IP Address</h1>
+                <InputText v-model="agentIpAddress" placeholder="Enter IP Address" class="w-full p-2 border rounded" />
+              </div>
+              <div>
+                <h1 class="font-medium mb-1">HSM Key</h1>
+                <InputText v-model="agentHsmKey" placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
+              </div>              
+              <div class="flex space-x-3 !mt-4">
+                <Button label="Save" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white" @click="submitEditAgent" />
+                <Button label="Delete" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-red-500 !border-red-500 text-white" @click="deleteAgent" />
               </div>
             </div>
           </div>

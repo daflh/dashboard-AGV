@@ -5,6 +5,7 @@ import SelectButton from "primevue/selectbutton";
 import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentStatusCard from "@/components/pages/Status/AgentStatusCard.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 
 // Filter options for agent status
 const filterOptions = [
@@ -47,13 +48,16 @@ const filteredAgents = computed(() => {
       </div>
     </div>
 
-    <!-- Display filtered agents -->
-    <div class="flex justify-left mx-20 flex-wrap gap-16 mb-10">
+    <template v-if="mainStore.isAgentsLoaded">
+      <div v-show="filteredAgents.length > 0" class="flex justify-left mx-20 flex-wrap gap-16 mb-10">
         <AgentStatusCard
           v-for="(agent, index) in filteredAgents"
           :key="index"
           :agent="agent"
         />
-    </div>
+      </div>
+      <div v-show="filteredAgents.length === 0" class="w-full text-center">No agents found</div>
+    </template>
+    <LoadingSpinner v-else class="mx-auto mt-4" />
   </UserLayout>
 </template>

@@ -12,7 +12,7 @@ const agentBattery = computed(() => props.agent.battery ?? 0);
 </script>
 <template>
   <div class="flex-col justify-center w-72 h-96 bg-white shadow-md p-4 rounded-lg">
-    <h1 class="font-semibold text-2xl text-primaryblue text-center">
+    <h1 class="font-semibold text-2xl text-center text-gray-800">
       {{ agent.name }}
     </h1>
 
@@ -42,8 +42,8 @@ const agentBattery = computed(() => props.agent.battery ?? 0);
           </p>
         </div>
         <div class="flex justify-between w-full px-4 text-sm">
-          <h2 class="font-semibold text-primaryblue">Linear Vel.</h2>
-          <h2 class="font-semibold text-primaryblue">Angular Vel.</h2>
+          <h2 class="font-semibold text-gray-800">Linear Velo</h2>
+          <h2 class="font-semibold text-gray-800">Angular Velo</h2>
         </div>
       </div>
       <div class="border-t-2 border-gray-300 my-3 w-full"></div>
@@ -69,16 +69,16 @@ const agentBattery = computed(() => props.agent.battery ?? 0);
             alt="Signal Icon"
             class="h-8 mx-auto"
           /> -->
-          <SignalIcon alt="Signal Icon" class="h-8"/>
-          <p class="font-semibold text-primaryblue">Signal</p>
+          <SignalIcon alt="Signal Icon" class="h-8 text-primaryblue"/>
+          <p class="font-semibold text-gray-800">Signal</p>
         </div>
         <!-- <div class="text-center">
           <h2 class="font-bold text-2xl text-primaryblue">{{ agent.velocity }}<span class="text-base">m/s</span></h2>
-          <p class="font-semibold text-primaryblue">Velocity</p>
+          <p class="font-semibold">Velocity</p>
         </div> -->
         <div class="text-center" title="Maintenance Cycle">
           <h2 class="font-bold text-2xl text-primaryblue">{{ 12 }}H</h2>
-          <p class="font-semibold text-primaryblue mb-4">Mnt. Cycle</p>
+          <p class="font-semibold mb-4 text-gray-800">Mnt. Cycle</p>
         </div>
       </div>
     </div>

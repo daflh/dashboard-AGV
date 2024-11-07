@@ -20,6 +20,7 @@ function initializeSocket() {
 
   socket.emit('agent:getAll', (agentsData: Agent[]) => {
     mainStore.agents = agentsData;
+    mainStore.isAgentsLoaded = true;
   });
 
   socket.on('agent:updated', (agentId: number, agentData: AgentCondition) => {

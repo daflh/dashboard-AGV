@@ -8,6 +8,7 @@ import InputText from "primevue/inputtext";
 import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentCard from "@/components/pages/Agents/AgentCard.vue";
+import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import { Agent } from '@/types/agent';
 
 const mainStore = useMainStore();
@@ -109,6 +110,10 @@ const handleAgentDeleted = (agentId: number) => {
                   <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
                 </div>
                 <div>
+                  <h1 class="font-medium mb-1">Register Plant</h1>
+                  <InputText v-model="agentRegisterPlant" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+                </div>
+                <div>
                   <h1 class="font-medium mb-1">IP Address</h1>
                   <InputText v-model="agentIpAddress" placeholder="Enter IP Address" class="w-full p-2 border rounded" />
                 </div>
@@ -116,13 +121,9 @@ const handleAgentDeleted = (agentId: number) => {
                   <h1 class="font-medium mb-1">HSM Key</h1>
                   <InputText v-model="agentHsmKey" placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
                 </div>
-                <div>
-                  <h1 class="font-medium mb-1">Register Plant</h1>
-                  <InputText v-model="agentRegisterPlant" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
-                </div>
                 <Button
-                  label="Submit"
-                  class="!mt-5 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
+                  label="Save"
+                  class="!mt-4 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
                   @click="submitAgent"
                 />
               </div>
@@ -130,14 +131,19 @@ const handleAgentDeleted = (agentId: number) => {
           </Dialog>
         </div>
       </div>
-      <div class="content-grid gap-6">
-        <AgentCard
+      
+      <template v-if="mainStore.isAgentsLoaded">
+        <div v-show="filteredAgents.length > 0" class="content-grid gap-6">
+          <AgentCard
           v-for="agent in filteredAgents"
           :key="agent.name"
           :agent="agent"
           @agentDeleted="handleAgentDeleted"
-        />
-      </div>
+          />
+        </div>
+        <div v-show="filteredAgents.length === 0" class="w-full text-center">No agents found</div>
+      </template>
+      <LoadingSpinner v-else class="mx-auto mt-10" />
     </div>
   </UserLayout>
 </template>
