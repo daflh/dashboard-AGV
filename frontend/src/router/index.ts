@@ -38,6 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const mainStore = useMainStore()
   const jwtToken = getJwtToken()
 
   // if client doesn't have token, always redirect to login page
@@ -53,14 +54,14 @@ router.beforeEach((to) => {
     return to.name !== 'login' ? { name: 'login' } : true
   }
 
+  mainStore.jwtToken = getJwtToken()
+
   return to.name === 'login' ? { name: 'agents' } : true
 })
 
 router.afterEach((to) => {
   if (to.name !== 'login') {
     const mainStore = useMainStore()
-    
-    if (!mainStore.jwtToken) mainStore.jwtToken = getJwtToken()
     if (!mainStore.socket) initializeSocket()
   }
 })
