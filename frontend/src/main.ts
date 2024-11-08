@@ -8,6 +8,7 @@ import { definePreset } from '@primevue/themes'
 import App from './App.vue'
 import router from './router'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 import AOS from 'aos'
 import Lara from '@primevue/themes/lara'
 import { createVuetify } from 'vuetify'
@@ -48,6 +49,7 @@ app.use(PrimeVue, {
     }
   }
 })
+app.use(ToastService)
 app.use(vuetify)
 app.mount('#app')
 

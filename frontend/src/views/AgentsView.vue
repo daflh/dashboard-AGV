@@ -100,7 +100,7 @@ const handleAgentDeleted = (agentId: number) => {
             label="Add"
             icon="pi pi-plus"
             @click="toggleAddAgentDialog"
-            class="!bg-primaryblue !border-primaryblue"
+            class="!bg-primaryblue hover:!bg-blue-800 !border-primaryblue"
           />
           <Dialog v-model:visible="displayAddAgentDialog" header="Add New Agent" :draggable="false" modal>
             <div class="flex flex-col gap-4 w-96 p-1 bg-white">
@@ -123,7 +123,7 @@ const handleAgentDeleted = (agentId: number) => {
                 </div>
                 <Button
                   label="Save"
-                  class="!mt-4 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white"
+                  class="!mt-4 px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue hover:!bg-blue-800 !border-primaryblue text-white"
                   @click="submitAgent"
                 />
               </div>

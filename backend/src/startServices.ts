@@ -7,6 +7,7 @@ import AgentsCommService from './services/AgentsCommService';
 import DatabaseService from './services/DatabaseService';
 import DummyAgentsGenerator from './services/DummyAgentsGenerator';
 import { AgentCondition, AgentConfiguration, AgentsObj } from "./models/agent";
+import { isTokenValid } from './auth';
 
 const MAP_NAME = "basement"; // should not be hard-coded
 const USE_DUMMY_AGENTS = false; // for development & testing purpose
@@ -42,9 +43,15 @@ export default function startServices(httpServer: Server) {
 
       for (const agent of agentsUpToDate) {
         if (!agents[agent.id]) {
+          // if the agent is not exists yet, add it and connect to it
           agents[agent.id] = agent;
           agentsCommService.connectToAgent(agent);
         } else {
+          // if the agent's IP address has changed, connect to the new IP address
+          if (agent.ipAddress !== agents[agent.id].ipAddress) {
+            agentsCommService.connectToAgent(agent);
+          }
+          // if the agent already exists, update (override) the data
           agents[agent.id] = {
             ...agents[agent.id],
             ...agent,
@@ -58,6 +65,21 @@ export default function startServices(httpServer: Server) {
 
   // Initial read of agents from the database
   updateAgentsFromDatabase();
+
+  // validate JWT token
+  webSocketService.io.use((socket, next) => {
+    const socketAuth = socket.handshake.auth;
+    
+    if (socketAuth.token) {
+      if (isTokenValid(socketAuth.token)) {
+        next();
+      } else {
+        next(new Error("Invalid token"));
+      }
+    } else {
+      next(new Error("No token provided"));
+    }
+  });
 
   // Handle status data
   agentsCommService.onStatusData((agentId, data: AgentCondition) => {

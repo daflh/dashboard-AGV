@@ -1,22 +1,33 @@
 import { io } from 'socket.io-client';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import { useMainStore } from '@/stores/main';
+import { setJwtToken } from '@/utils';
 import { Agent, AgentCondition } from '@/types/agent';
 // import { SlamMap } from '@/types/slam';
 
-function getBackendLocation() {
-  const { protocol, host } = window.location;
-  const isProd = import.meta.env['PROD'];
-  const backendPort = import.meta.env['VITE_BACKEND_PORT'] ?? '8001';
-  const backendLocation = isProd
-    ? `${protocol}//${host}`
-    : `${protocol}//${host.split(':')[0]}:${backendPort}`;
-
-  return backendLocation;
-}
-
 function initializeSocket() {
-  const socket = io(getBackendLocation());
+  const toast = useToast();
+  const router = useRouter();
   const mainStore = useMainStore();
+
+  const socket = io(mainStore.backendUrl, {
+    auth: { token: mainStore.jwtToken }
+  });
+
+  socket.on('connect_error', (err) => {
+    toast.add({
+      severity: 'error',
+      summary: 'JWT verification failed',
+      detail: err.message + '\nRedirecting to login page...',
+      life: 3000
+    });
+
+    setTimeout(() => {
+      setJwtToken(null);
+      router.push('/login');
+    }, 3000);
+  });
 
   socket.emit('agent:getAll', (agentsData: Agent[]) => {
     mainStore.agents = agentsData;

@@ -2,6 +2,8 @@
 import { useRouter, useRoute, RouterLink } from "vue-router";
 import { ref, computed } from "vue";
 import Popover from "primevue/popover";
+import { useMainStore } from '@/stores/main';
+import { setJwtToken } from '@/utils';
 import AgentsIcon from "@/components/icon/AgentsIcon.vue";
 import StatusIcon from "@/components/icon/StatusIcon.vue";
 import MapAndControlIcon from "@/components/icon/MapAndControlIcon.vue";
@@ -25,6 +27,7 @@ const menus = [
   }
 ];
 
+const mainStore = useMainStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -32,7 +35,7 @@ const op = ref<typeof Popover | null>(null); // Pastikan ref bisa berupa null aw
 const activeRoute = computed(() => route.name);
 
 const logout = () => {
-  localStorage.removeItem("isLoggedIn");
+  setJwtToken(null);
   router.push("/login");
 };
 
@@ -76,7 +79,7 @@ const togglePopover = (event: Event) => {
       <Popover ref="op" class="!mt-6 min-w-40">
         <div class="text-gray-800">
           <div class="text-[.925rem] mb-0.5">Logged in as</div>
-          <div class="font-semibold">admin</div>
+          <div class="font-semibold">{{ mainStore.userData?.username }}</div>
           <hr class="my-3 bg-gray-800" />
           <div class="space-y-1">
             <div class="cursor-pointer">Settings</div>

@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useMainStore } from '@/stores/main';
+import initializeSocket from '@/initializeSocket'
+import { getJwtToken, setJwtToken } from '@/utils';
 import LoginView from '@/views/LoginView.vue'
 import AgentsView from '@/views/AgentsView.vue'
 import StatusView from '@/views/StatusView.vue'
@@ -35,14 +38,30 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+  const jwtToken = getJwtToken()
 
-  if (to.name !== 'login' && !isLoggedIn) {
-    return { name: 'login' }
-  } else if (to.name === 'login' && isLoggedIn) {
-    return { name: 'agents' }
-  } else {
-    return true
+  // if client doesn't have token, always redirect to login page
+  if (!jwtToken) return to.name !== 'login' ? { name: 'login' } : true
+
+  try {
+    // check jwt token validity
+    const jwtPayload = JSON.parse(window.atob(jwtToken.split('.')[1]))
+    // check token expiration
+    if (Date.now() > jwtPayload.exp * 1000) throw new Error('Token expired')
+  } catch {
+    setJwtToken(null)
+    return to.name !== 'login' ? { name: 'login' } : true
+  }
+
+  return to.name === 'login' ? { name: 'agents' } : true
+})
+
+router.afterEach((to) => {
+  if (to.name !== 'login') {
+    const mainStore = useMainStore()
+    
+    if (!mainStore.jwtToken) mainStore.jwtToken = getJwtToken()
+    if (!mainStore.socket) initializeSocket()
   }
 })
 

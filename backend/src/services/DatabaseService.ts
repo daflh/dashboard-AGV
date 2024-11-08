@@ -78,7 +78,7 @@ export default class DatabaseService {
     }
   }
 
-    // Method to delete an agent by ID
+  // Method to delete an agent by ID
   public async deleteAgent(agentId: number): Promise<void> {
     try {
       await this.prisma.agents.delete({
@@ -87,6 +87,23 @@ export default class DatabaseService {
       console.log(`Agent with ID ${agentId} deleted successfully.`);
     } catch (error) {
       console.error(`Error deleting agent with ID ${agentId}:`, error);
+      throw error;
+    }
+  }
+
+  // Fetch a user by username
+  public async getUser(username: string) {
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { username },
+      });
+      if (!user) {
+        console.warn(`User with username "${username}" not found.`);
+        return null;
+      }
+      return user;
+    } catch (error) {
+      console.error(`Error fetching user with username "${username}":`, error);
       throw error;
     }
   }

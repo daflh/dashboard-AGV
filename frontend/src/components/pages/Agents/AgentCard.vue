@@ -105,13 +105,13 @@ const deleteAgent = () => {
     </div>
     <hr class="my-3" />
     <div class="flex justify-around">
-      <RouterLink to="/status" title="Go to agent status" class="text-primaryblue hover:text-orange-900">
+      <RouterLink to="/status" title="Go to agent status" class="text-primaryblue hover:text-blue-800">
         <StatusIcon alt="Status Icon" class="h-6 mr-2" />
       </RouterLink>
-      <RouterLink to="control" title="Go to agent control" class="text-primaryblue hover:text-orange-900">
+      <RouterLink to="control" title="Go to agent control" class="text-primaryblue hover:text-blue-800">
         <MapAndControlIcon alt="Map And Control Icon" class="h-5 mr-2" />
       </RouterLink>
-      <div class="cursor-pointer text-primaryblue hover:text-orange-900" title="Edit agent" @click="toggleEditAgentDialog">
+      <div class="cursor-pointer text-primaryblue hover:text-blue-800" title="Edit agent" @click="toggleEditAgentDialog">
         <EditIcon alt="Edit Icon" class="h-6 mr-2" />
         <Dialog v-model:visible="displayEditAgentDialog" header="Edit Agent" :draggable="false" modal>
           <div class="flex flex-col gap-4 w-96 p-1 bg-white">
@@ -133,8 +133,8 @@ const deleteAgent = () => {
                 <InputText v-model="agentHsmKey" placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
               </div>              
               <div class="flex space-x-3 !mt-4">
-                <Button label="Save" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue !border-primaryblue text-white" @click="submitEditAgent" />
-                <Button label="Delete" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-red-500 !border-red-500 text-white" @click="deleteAgent" />
+                <Button label="Save" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-primaryblue hover:!bg-blue-800 !border-primaryblue text-white" @click="submitEditAgent" />
+                <Button label="Delete" class="px-4 py-2 w-fit !rounded-xl !h-10 !bg-red-700 hover:!bg-red-600 !border-red-500 text-white" @click="deleteAgent" />
               </div>
             </div>
           </div>

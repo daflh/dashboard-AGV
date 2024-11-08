@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { RouterView } from "vue-router";
-import initializeSocket from "./initializeSocket";
-
-initializeSocket();
+import Toast from 'primevue/toast';
 
 // Reactive reference to store scroll position
 const scrollY = ref(0);
@@ -25,8 +23,5 @@ onUnmounted(() => {
 
 <template>
   <RouterView />
+  <Toast position="bottom-right" />
 </template>
-
-<style>
-/* Add any global styles here if needed */
-</style>
