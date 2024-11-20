@@ -34,6 +34,10 @@ function initializeSocket() {
     mainStore.isAgentsLoaded = true;
   });
 
+  socket.emit('site:getAll', (sitesData) => {
+    mainStore.sites = sitesData.map(site => ({ label: site.name, value: site.id })); // Store sites in mainStore with label-value format
+  });
+
   socket.on('agent:updated', (agentId: number, agentData: AgentCondition) => {
     const agentIndex = mainStore.agents.findIndex((a) => a.id === agentId);
     if (agentIndex !== -1) {
@@ -48,14 +52,8 @@ function initializeSocket() {
     mainStore.slamMap = mapData;
   });
 
-  // uncomment this block of code to show the dummy map
-  // socket.emit('slamMap:get', (slamMapData: any) => {
-  //   if (slamMapData !== null) {
-  //     mainStore.slamMap = slamMapData;
-  //   }
-  // });
-
   mainStore.socket = socket;
 }
 
 export default initializeSocket;
+

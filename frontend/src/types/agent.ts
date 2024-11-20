@@ -35,8 +35,8 @@ export interface AgentConfiguration {
   description: string
   ipAddress: string | null // IPv4
   hsmKey: string | null
-  site: string
-  company: string
+  siteId: number
+  companyId: number
   lastMaintenance: number // unix timestamp
 }
 

@@ -5,6 +5,7 @@ import Button from "primevue/button";
 import SelectButton from "primevue/selectbutton";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
+import Dropdown from "primevue/dropdown"; // Import PrimeVue Dropdown component
 import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentCard from "@/components/pages/Agents/AgentCard.vue";
@@ -17,7 +18,7 @@ const { socket } = mainStore;
 const agentName = ref("");
 const agentIpAddress = ref("");
 const agentHsmKey = ref("");
-const agentRegisterPlant = ref("");
+const agentRegisterSite = ref(null); // Update to handle dropdown selection
 
 const successMessage = ref("");
 const errorMessage = ref("");
@@ -49,7 +50,7 @@ const submitAgent = () => {
     name: agentName.value,
     ipAddress: agentIpAddress.value,
     hsmKey: agentHsmKey.value,
-    siteId: agentRegisterPlant.value,
+    siteId: agentRegisterSite.value,
   };
 
   if (socket !== null) {
@@ -72,7 +73,6 @@ const submitAgent = () => {
 const handleAgentDeleted = (agentId: number) => {
   mainStore.agents = mainStore.agents.filter(agent => agent.id !== agentId);
 };
-
 </script>
 
 <template>
@@ -110,8 +110,15 @@ const handleAgentDeleted = (agentId: number) => {
                   <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
                 </div>
                 <div>
-                  <h1 class="font-medium mb-1">Register Plant</h1>
-                  <InputText v-model="agentRegisterPlant" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+                  <h1 class="font-medium mb-1">Register Site</h1>
+                  <Dropdown 
+                    v-model="agentRegisterSite" 
+                    :options="mainStore.sites" 
+                    option-label="label" 
+                    option-value="value" 
+                    placeholder="Select a Site" 
+                    class="w-full border rounded" 
+                  />
                 </div>
                 <div>
                   <h1 class="font-medium mb-1">IP Address</h1>

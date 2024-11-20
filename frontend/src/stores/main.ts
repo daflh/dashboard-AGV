@@ -10,6 +10,7 @@ interface MainState {
   socket: Socket | null,
   slamMap: SlamMap | null,
   agents: Agent[],
+  sites: { label: string, value: number }[], // Add sites to MainState
   isAgentsLoaded: boolean,
   controlMapContextMenu: {
     isVisible: boolean,
@@ -25,6 +26,7 @@ export const useMainStore = defineStore('main', {
     socket: null,
     slamMap: null,
     agents: [],
+    sites: [], // Initialize sites as an empty array
     isAgentsLoaded: false,
     controlMapContextMenu: {
       isVisible: false,

@@ -221,6 +221,18 @@ export default function startServices(httpServer: Server) {
       else if (direction === "right") agentControlState.angularZ = -1;
     });
 
+    // Fetch all sites
+    socket.on("site:getAll", async (cb: (sitesData: any[]) => void) => {
+      try {
+        const sites = await databaseService.getSites();
+        cb(sites);
+      } catch (error) {
+        console.error("Error fetching sites:", error);
+        cb([]); // Return an empty array in case of error
+      }
+    });
+
+
     // Send direction control data at 2 Hz
     setInterval(() => {
       if (!agentControlState.agentId) return;

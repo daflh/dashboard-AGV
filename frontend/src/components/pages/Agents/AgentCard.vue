@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
 import { RouterLink } from "vue-router";
 import AgentStatus from "./AgentStatus.vue";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
+import Dropdown from "primevue/dropdown"; // Import Dropdown component
 import StatusIcon from "@/components/icon/StatusIcon.vue";
 import EditIcon from "@/components/icon/EditIcon.vue";
 import MapAndControlIcon from "@/components/icon/MapAndControlIcon.vue";
@@ -26,10 +27,26 @@ const { socket } = mainStore;
 const agentName = ref(props.agent?.name || "");
 const agentIpAddress = ref(props.agent?.ipAddress || "");
 const agentHsmKey = ref(props.agent?.hsmKey || "");
-const agentSite = ref(props.agent?.site || "");
+const agentSite = ref(props.agent?.siteId || null); // Initialize with the current siteId
 
 const displayEditAgentDialog = ref(false);
 const displayCheckPortStatus = ref(false);
+
+// Watch for changes in props.agent to update agentSite with the current siteId
+watch(() => props.agent, (newAgent) => {
+  if (newAgent) {
+    agentName.value = newAgent.name || "";
+    agentIpAddress.value = newAgent.ipAddress || "";
+    agentHsmKey.value = newAgent.hsmKey || "";
+    agentSite.value = newAgent.siteId || null;
+  }
+});
+
+// Compute the site name based on siteId
+const siteName = computed(() => {
+  const site = mainStore.sites.find(s => s.value === props.agent?.siteId);
+  return site ? site.label : "Unknown site";
+});
 
 const toggleEditAgentDialog = () => {
   displayEditAgentDialog.value = !displayEditAgentDialog.value;
@@ -47,7 +64,7 @@ const submitEditAgent = () => {
     name: agentName.value,
     ipAddress: agentIpAddress.value,
     hsmKey: agentHsmKey.value,
-    site: parseInt(agentSite.value, 10),
+    siteId: agentSite.value // Ensure siteId is updated based on dropdown selection
   };
 
   if (socket) {
@@ -82,7 +99,6 @@ const deleteAgent = () => {
     }
   });
 };
-
 </script>
 
 <template>
@@ -101,7 +117,7 @@ const deleteAgent = () => {
       </Dialog>
     </div>
     <div class="font-medium text-sm text-slate-700">
-      {{ props.agent?.site || 'Unknown site' }} – {{ props.agent?.ipAddress || 'Unknown host' }}
+      {{ siteName }} – {{ props.agent?.ipAddress || 'Unknown host' }}
     </div>
     <hr class="my-3" />
     <div class="flex justify-around">
@@ -121,8 +137,15 @@ const deleteAgent = () => {
                 <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
               </div>
               <div>
-                <h1 class="font-medium mb-1">Register Plant</h1>
-                <InputText v-model="agentSite" placeholder="Enter Register Plant" class="w-full p-2 border rounded" />
+                <h1 class="font-medium mb-1">Register Site</h1>
+                <Dropdown 
+                  v-model="agentSite" 
+                  :options="mainStore.sites" 
+                  option-label="label" 
+                  option-value="value" 
+                  placeholder="Select a Site" 
+                  class="w-full border rounded" 
+                />
               </div>
               <div>
                 <h1 class="font-medium mb-1">IP Address</h1>

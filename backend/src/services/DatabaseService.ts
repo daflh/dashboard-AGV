@@ -91,6 +91,24 @@ export default class DatabaseService {
     }
   }
 
+// Fetch all sites from the database
+  public async getSites(): Promise<any[]> {
+    try {
+      const sites = await this.prisma.sites.findMany();
+      return sites.map((site: any) => ({
+        id: site.id,
+        name: site.name ?? "",
+        companyId: site.company_id ?? 1,
+        createdAt: site.created_at?.getTime() ?? 0,
+        updatedAt: site.updated_at?.getTime() ?? 0,
+      }));
+    } catch (error) {
+      console.error('Error fetching sites:', error);
+      throw error;
+    }
+  }
+
+  
   // Fetch a user by username
   public async getUser(username: string) {
     try {
