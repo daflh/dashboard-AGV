@@ -4,7 +4,16 @@ import { AgentConfiguration } from '../models/agent';
 // @ts-ignore
 import { Bzip2 } from 'compressjs';
 
+interface MapData {
+  width: number;
+  height: number;
+  resolution: number;
+  origin: number[];
+  map_matrix: number[][];
+}
+
 class AgentsCommService {
+  static GENERAL_PORT = 48100;
   static STATUS_DATA_PORT = 48101;
   static MAP_DATA_PORT = 48102;
   static CONTROL_CMD_PORT = 48201;
@@ -35,15 +44,16 @@ class AgentsCommService {
     this.eventEmitter.emit('controlCmd', agentId, linearX, angularZ);
   }
 
-  public sendNavigationCmd(agentId: number, positionStr: string) {
-    this.eventEmitter.emit('navigationCmd', agentId, positionStr);
+  public sendNavigationCmd(agentId: number, navigationStr: string) {
+    this.eventEmitter.emit('navigationCmd', agentId, navigationStr);
   }
 
   private startCommClient(agentId: number, serverIp: string) {
-    const statusDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.STATUS_DATA_PORT);
-    const mapDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.MAP_DATA_PORT);
-    const controlCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.CONTROL_CMD_PORT);
-    const navigationCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.NAVIGATION_CMD_PORT);
+    const generalTcpClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.GENERAL_PORT);
+    // const statusDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.STATUS_DATA_PORT);
+    // const mapDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.MAP_DATA_PORT);
+    // const controlCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.CONTROL_CMD_PORT);
+    // const navigationCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.NAVIGATION_CMD_PORT);
 
     const portStatus = {
       data: false,
@@ -52,101 +62,152 @@ class AgentsCommService {
       navigation: false
     };
 
-
-    statusDataClient.on('connect', () => {
-      portStatus.data=true;
+    generalTcpClient.on('connect', () => {
+      // console.log('connected to general tcp client');
+      portStatus.data = true;
       this.eventEmitter.emit('statusData', agentId, { status: 'idle' });
     });
 
-    statusDataClient.on('close', () => {
-      portStatus.data=false;
+    generalTcpClient.on('close', () => {
+      portStatus.data = false;
       this.eventEmitter.emit('statusData', agentId, { status: 'offline' });
     });
 
-    mapDataClient.on('connect', () => {
-      portStatus.map = true;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
-  
-    mapDataClient.on('close', () => {
-      portStatus.map = false;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
+    let receivedBuf = Buffer.alloc(0);
+    let expectedLength = 0;
 
-    controlCmdClient.on('connect', () => {
-      portStatus.control = true;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
-  
-    controlCmdClient.on('close', () => {
-      portStatus.control = false;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
-  
-    navigationCmdClient.on('connect', () => {
-      portStatus.navigation = true;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
-  
-    navigationCmdClient.on('close', () => {
-      portStatus.navigation = false;
-      this.eventEmitter.emit('statusData', agentId, { portStatus });
-    });
+    generalTcpClient.on('data', (chunk) => {
+      // console.log('before', receivedBuf);
+      receivedBuf = Buffer.concat([receivedBuf, chunk]);
+      // console.log('recv', chunk);
+      // console.log('after', receivedBuf);
 
-    
-    statusDataClient.on('data', (rawData) => {
-      try {
-        const data = JSON.parse(rawData.toString());
-        this.eventEmitter.emit('statusData', agentId, {
-          linearVelo: data?.cmd_vel?.linear?.x ?? 0,
-          angularVelo: data?.cmd_vel?.angular?.z ?? 0,
-          position: data?.odom?.position ? [data.odom.position.x, data.odom.position.y] : null
-        });
-      } catch (error) {
-        console.log('Error receiving status data');
-      }
-    });
-
-    let recvMapDataQueue = Buffer.alloc(0);
-    let prevFullMapData = Buffer.alloc(0);
-
-    mapDataClient.on('data', (rawData) => {
-      recvMapDataQueue = Buffer.concat([recvMapDataQueue, rawData]);
-
-      if (
-        recvMapDataQueue.toString('utf8').startsWith('<<<') &&
-        recvMapDataQueue.toString('utf8').endsWith('>>>')
-      ) {
-        try {
-          let fullMapData = recvMapDataQueue.subarray(3, -3);
-          // console.log('Received map', fullMapData.length);
-          if (fullMapData.toString('utf8').startsWith('BSDIFF40')) {
-            fullMapData = patch(prevFullMapData, fullMapData);
-          }
-          
-          const parsedMapData = JSON.parse(fullMapData.toString('utf8'));
-          this.eventEmitter.emit('mapData', agentId, parsedMapData);
-          
-          recvMapDataQueue = Buffer.alloc(0);
-          prevFullMapData = fullMapData;
-        } catch (error) {
-          console.log('Error patching map data');
+      if (expectedLength === 0) {
+        if (receivedBuf.length >= 6 && receivedBuf.subarray(0, 2).toString('hex') === 'fe01') {
+          expectedLength = receivedBuf.readUInt32BE(2);
+          receivedBuf = receivedBuf.subarray(6);
         }
+      }
+
+      // If we have enough data for the full message
+      if (expectedLength > 0 && receivedBuf.length >= expectedLength) {
+        const rawMsg = receivedBuf.subarray(0, expectedLength).toString('utf-8');
+        
+        try {
+          const data = JSON.parse(rawMsg.toString());
+          // console.log(data);
+
+          this.eventEmitter.emit('statusData', agentId, {
+            linearVelo: data?.cmd_vel?.linear?.x ?? 0,
+            angularVelo: data?.cmd_vel?.angular?.z ?? 0,
+            position: data?.position_robot?.pose?.position
+              ? [data.position_robot.pose.position.x, data.position_robot.pose.position.y]
+              : null
+          });
+
+          // only if map data is available
+          if (data.map?.data?.length) {
+            let mapData = {
+              width: data.map.info.width,
+              height: data.map.info.height,
+              resolution: data.map.info.resolution,
+              origin: data.map.info.origin,
+              map_matrix: convert1DTo2DMap(data.map.data, data.map.info.width, data.map.info.height)
+            };
+            mapData = fixMapRotation(mapData);
+            
+            this.eventEmitter.emit('mapData', agentId, mapData);
+          }
+        } catch (error) {
+          console.log('Error receiving status data', error);
+        }
+
+        receivedBuf = receivedBuf.subarray(expectedLength); // Remove the processed message
+        expectedLength = 0;
       }
     });
 
     this.eventEmitter.on('controlCmd', (cmdAgentId: number, linearX: number, angularZ: number) => {
       if (agentId !== cmdAgentId) return;
-      const controlData = { linear_x: linearX, angular_z: angularZ };
-      controlCmdClient.write(JSON.stringify(controlData) + ';$');
+      const controlData = { command: 'keyboard', linear_x: linearX, angular_z: angularZ };
+      generalTcpClient.write(JSON.stringify(controlData));
     });
 
-    this.eventEmitter.on('navigationCmd', (cmdAgentId: number, positionStr: string) => {
+    this.eventEmitter.on('navigationCmd', (cmdAgentId: number, navigationStr: string) => {
       if (agentId !== cmdAgentId) return;
-      // const [x, y] = position;
-      navigationCmdClient.write(`${positionStr}\n`);
+      const navs = navigationStr.split(',');
+      const navData = {
+        command: 'coordinate',
+        coordinate_x: parseFloat(navs[0]),
+        coordinate_y: parseFloat(navs[1]),
+        heading: navs[2] ? parseFloat(navs[2]) : 0
+      };
+      generalTcpClient.write(JSON.stringify(navData));
     });
+
+    // let recvMapDataQueue = Buffer.alloc(0);
+    // let prevFullMapData = Buffer.alloc(0);
+
+    // mapDataClient.on('data', (rawData) => {
+    //   recvMapDataQueue = Buffer.concat([recvMapDataQueue, rawData]);
+
+    //   if (
+    //     recvMapDataQueue.toString('utf8').startsWith('<<<') &&
+    //     recvMapDataQueue.toString('utf8').endsWith('>>>')
+    //   ) {
+    //     try {
+    //       let fullMapData = recvMapDataQueue.subarray(3, -3);
+    //       // console.log('Received map', fullMapData.length);
+    //       if (fullMapData.toString('utf8').startsWith('BSDIFF40')) {
+    //         fullMapData = patch(prevFullMapData, fullMapData);
+    //       }
+          
+    //       const parsedMapData = JSON.parse(fullMapData.toString('utf8'));
+    //       this.eventEmitter.emit('mapData', agentId, parsedMapData);
+          
+    //       recvMapDataQueue = Buffer.alloc(0);
+    //       prevFullMapData = fullMapData;
+    //     } catch (error) {
+    //       console.log('Error patching map data');
+    //     }
+    //   }
+    // });
   }
+}
+
+function convert1DTo2DMap(array: number[], width: number, height: number) {
+  if (array.length !== width * height) {
+    throw new Error("The array size does not match the specified dimensions.");
+  }
+
+  const mapMatrix = [];
+  for (let y = 0; y < height; y++) {
+    const row = array.slice(y * width, (y + 1) * width);
+    mapMatrix.push(row);
+  }
+  return mapMatrix;
+}
+
+// Rotate map 90 degrees CCW and mirror horizontally for display
+function fixMapRotation(mapData: MapData): MapData {
+  const matrix = mapData.map_matrix;
+  const rows = matrix.length;
+  const cols = matrix[0].length;
+  const rotatedMatrix = Array.from({ length: cols }, () => Array(rows));
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      rotatedMatrix[cols - x - 1][rows - y - 1] = matrix[y][x];
+    }
+  }
+
+  return {
+    width: mapData.height,
+    height: mapData.width,
+    resolution: mapData.resolution,
+    origin: mapData.origin,
+    map_matrix: rotatedMatrix
+  };
 }
 
 // Function to apply the patch (BSDIFF4 format)

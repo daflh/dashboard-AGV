@@ -2,18 +2,30 @@
 import { computed } from 'vue';
 import { useMainStore } from '@/stores/main';
 
+const props = defineProps<{
+  agent: string | null
+}>();
+
 const mainStore = useMainStore();
 
 const contextMenuParam = computed(() => mainStore.controlMapContextMenu);
+const agentData = computed(() => {
+  return mainStore.agents.find((agent) => agent.name === props.agent) || null;
+});
 
 function navigate() {
-  console.log('Navigate here');
+  const [x, y] = contextMenuParam.value.coordinate;
+  mainStore.socket?.emit(
+    'agentCmd:targetPosition',
+    agentData.value?.id,
+    `${x.toFixed(3)},${y.toFixed(3)}`
+  );
   mainStore.controlMapContextMenu.isVisible = false;
 }
 
 function copyCoord() {
   const [x, y] = contextMenuParam.value.coordinate;
-  navigator.clipboard.writeText(`${x.toFixed(3)}, ${y.toFixed(3)}`);
+  navigator.clipboard.writeText(`${x.toFixed(5)}, ${y.toFixed(5)}`);
   mainStore.controlMapContextMenu.isVisible = false;
 }
 
@@ -29,6 +41,9 @@ function copyCoord() {
     }"
   >
     <div class="flex flex-col">
+      <div class="px-4 py-1.5 font-medium">
+        {{ contextMenuParam.coordinate[0].toFixed(5) }}, {{ contextMenuParam.coordinate[1].toFixed(5) }}
+      </div>
       <div class="px-4 py-1.5 hover:bg-gray-200 cursor-pointer" @click="navigate">Navigate here</div>
       <div class="px-4 py-1.5 hover:bg-gray-200 cursor-pointer" @click="copyCoord">Copy coordinate</div>
     </div>

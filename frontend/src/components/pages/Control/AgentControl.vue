@@ -4,8 +4,9 @@ import { useMainStore } from '@/stores/main'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
-import RecentLogs from './RecentLogs.vue'
+// import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
+import { roundNumber } from '@/utils/numberUtils'
 
 const props = defineProps<{
   agent: string | null
@@ -39,6 +40,10 @@ function onNavigate() {
   targetPosition.value = '';
 }
 
+function isValid(value: any) {
+  return value !== null && value !== undefined;
+}
+
 </script>
 
 <template>
@@ -61,11 +66,18 @@ function onNavigate() {
     </div>
     <div class="mt-4 space-y-0.5">
       <div>Position: <span class="font-medium">
-        {{ agentData?.position?.[0] ?? '-' }}, {{ agentData?.position?.[1] ?? '-' }}
+        {{ isValid(agentData?.position?.[0]) ? roundNumber(agentData.position[0], 4) : '-' }},
+        {{ isValid(agentData?.position?.[1]) ? roundNumber(agentData.position[1], 4) : '-' }}
       </span></div>
-      <div>Orientation: <span class="font-medium">{{ agentData?.heading ?? '-' }} rad</span></div>
-      <div>Linear vel: <span class="font-medium">{{ agentData?.linearVelo ?? '-' }} m/s</span></div>
-      <div>Angular vel: <span class="font-medium">{{ agentData?.angularVelo ?? '-' }} rad/s</span></div>
+      <div>Heading: <span class="font-medium">
+        {{ isValid(agentData?.heading) ? roundNumber(agentData.heading, 2) : '-' }} rad
+      </span></div>
+      <div>Linear vel: <span class="font-medium">
+        {{ isValid(agentData?.linearVelo) ? roundNumber(agentData.linearVelo, 2) : '-' }} m/s
+      </span></div>
+      <div>Angular vel: <span class="font-medium">
+        {{ isValid(agentData?.angularVelo) ? roundNumber(agentData.angularVelo, 2) : '-' }} rad/s
+      </span></div>
     </div>
     <div class="mt-8">
       <h2 class="text-lg font-medium">Actions</h2>
@@ -87,6 +99,6 @@ function onNavigate() {
         <Button type="button" label="Map Entire Room" class="!bg-primaryblue" />
       </div>
     </div>
-    <RecentLogs class="mt-8" /> 
+    <!-- <RecentLogs class="mt-8" />  -->
   </div>
 </template>

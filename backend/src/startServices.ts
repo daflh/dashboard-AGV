@@ -127,10 +127,14 @@ export default function startServices(httpServer: Server) {
         width: mapData.width,
         height: mapData.height,
         resolution: mapData.resolution,
-        origin: [0, 0, 0],
+        origin: [
+          mapData.origin.position.x,
+          mapData.origin.position.y,
+          mapData.origin.position.z
+        ],
         content: Buffer.concat(chunks).toString('base64')
       });
-    });    
+    });
   });
 
   if (USE_DUMMY_AGENTS) {
@@ -215,10 +219,10 @@ export default function startServices(httpServer: Server) {
     socket.on("agentCmd:direction", (agentId: number, direction: string) => {
       agentControlState.agentId = agentId;
       agentControlState.lastControlTimestamp = Date.now();
-      if (direction === "forward") agentControlState.linearX = 1;
-      else if (direction === "backward") agentControlState.linearX = -1;
-      else if (direction === "left") agentControlState.angularZ = 1;
-      else if (direction === "right") agentControlState.angularZ = -1;
+      if (direction === "forward") agentControlState.linearX = 0.25;
+      else if (direction === "backward") agentControlState.linearX = -0.25;
+      else if (direction === "left") agentControlState.angularZ = 0.25;
+      else if (direction === "right") agentControlState.angularZ = -0.25;
     });
 
     // Fetch all sites
