@@ -48,7 +48,11 @@ function initializeSocket() {
       };
 
       if (mainStore.agents[agentIndex]?.position) {
-        agentMarker.setAgentMarker(agentId, mainStore.agents[agentIndex].position);
+        agentMarker.setAgentMarker(
+          agentId,
+          mainStore.agents[agentIndex].position,
+          mainStore.agents[agentIndex].heading ?? 0
+        );
       }
     }
   });

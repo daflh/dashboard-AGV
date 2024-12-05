@@ -70,7 +70,7 @@ function isValid(value: any) {
         {{ isValid(agentData?.position?.[1]) ? roundNumber(agentData.position[1], 4) : '-' }}
       </span></div>
       <div>Heading: <span class="font-medium">
-        {{ isValid(agentData?.heading) ? roundNumber(agentData.heading, 2) : '-' }} rad
+        {{ isValid(agentData?.heading) ? roundNumber(agentData.heading, 2) : '-' }} deg
       </span></div>
       <div>Linear vel: <span class="font-medium">
         {{ isValid(agentData?.linearVelo) ? roundNumber(agentData.linearVelo, 2) : '-' }} m/s

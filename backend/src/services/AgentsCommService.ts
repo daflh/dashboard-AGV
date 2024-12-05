@@ -95,11 +95,17 @@ class AgentsCommService {
         
         try {
           const data = JSON.parse(rawMsg.toString());
-          // console.log(data);
 
           this.eventEmitter.emit('statusData', agentId, {
             linearVelo: data?.cmd_vel?.linear?.x ?? 0,
             angularVelo: data?.cmd_vel?.angular?.z ?? 0,
+            heading: data?.position_robot?.pose?.orientation
+              ? quaternionToYaw(
+                data.position_robot.pose.orientation.x,
+                data.position_robot.pose.orientation.y,
+                data.position_robot.pose.orientation.z,
+                data.position_robot.pose.orientation.w)
+              : 0,
             position: data?.position_robot?.pose?.position
               ? [data.position_robot.pose.position.x, data.position_robot.pose.position.y]
               : null
@@ -208,6 +214,12 @@ function fixMapRotation(mapData: MapData): MapData {
     origin: mapData.origin,
     map_matrix: rotatedMatrix
   };
+}
+
+function quaternionToYaw(x: number, y: number, z: number, w: number) {
+  const yawInRadians = Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+  const yawInDegrees = yawInRadians * (180 / Math.PI);
+  return yawInDegrees;
 }
 
 // Function to apply the patch (BSDIFF4 format)
