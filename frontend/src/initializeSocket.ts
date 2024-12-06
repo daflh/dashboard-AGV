@@ -61,6 +61,26 @@ function initializeSocket() {
     mainStore.slamMap = mapData;
   });
 
+  socket.on('staticMap:response', (map) => {
+    if (map.data) {
+      mainStore.slamMap = map.data;
+      
+      toast.add({
+        severity: 'info',
+        summary: 'Static map received',
+        detail: 'Map name: ' + map.name,
+        life: 3000
+      });
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Static map not available',
+        detail: 'Map name: ' + map.name,
+        life: 3000
+      });
+    }
+  });
+
   mainStore.socket = socket;
 }
 

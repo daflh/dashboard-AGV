@@ -2,7 +2,7 @@ import { Server } from 'http';
 import { Socket } from 'socket.io';
 import { PNG } from 'pngjs';
 import WebSocketService from './services/WebSocketService';
-import MapProviderService, { MapData } from './services/MapProviderService';
+import StaticMapService from './services/StaticMapService';
 import AgentsCommService from './services/AgentsCommService';
 import DatabaseService from './services/DatabaseService';
 import DummyAgentsGenerator from './services/DummyAgentsGenerator';
@@ -21,7 +21,7 @@ interface AgentControlState {
 
 export default function startServices(httpServer: Server) {
   const webSocketService = new WebSocketService(httpServer);
-  const mapProviderService = new MapProviderService(MAP_NAME);
+  const staticMapService = new StaticMapService(MAP_NAME);
   const agentsCommService = new AgentsCommService();
   const databaseService = new DatabaseService(); // Using Prisma-based DatabaseService
   const dummyAgentGen = new DummyAgentsGenerator();
@@ -151,7 +151,6 @@ export default function startServices(httpServer: Server) {
   webSocketService.onClientConnection((socket: Socket) => {
     socket.join("authenticatedRoom");
 
-
     // Delete agent request
     socket.on("agent:delete", async (agentId: number, callback) => {
       try {
@@ -258,9 +257,15 @@ export default function startServices(httpServer: Server) {
       agentsCommService.sendNavigationCmd(agentId, positionStr);
     });
     
-    socket.on('slamMap:get', (cb: (mapData: MapData | null) => void) => {
-      const mapData = mapProviderService.getMap();
-      cb(mapData);
+    socket.on('staticMap:request', async () => {
+      if (!staticMapService.isMapLoaded) {
+        await staticMapService.loadMap();
+      }
+
+      socket.emit('staticMap:response', {
+        name: staticMapService.mapName,
+        data: staticMapService.getMap()
+      });
     });
   });
 

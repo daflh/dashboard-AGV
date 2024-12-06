@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
+import { useMainStore } from '@/stores/main'
 import MapFollowIcon from '@/components/icon/MapFollowIcon.vue';
 // import MapCloudIcon from '@/components/icon/MapCloudIcon.vue';
 import MapIcon from '@/components/icon/MapIcon.vue';
+
+const mainStore = useMainStore()
 
 const buttons = reactive([
   {
@@ -10,15 +13,10 @@ const buttons = reactive([
     icon: MapFollowIcon,
     action: () => console.log('Follow agent')
   },
-  // {
-  //   text: 'Cloud',
-  //   icon: MapCloudIcon,
-  //   action: () => console.log('Toggle point cloud')
-  // },
   {
     text: 'Static',
     icon: MapIcon,
-    action: () => console.log('Toggle static map')
+    action: () => mainStore.socket?.emit('staticMap:request')
   }
 ]);
 
