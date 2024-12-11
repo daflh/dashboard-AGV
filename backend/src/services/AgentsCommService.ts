@@ -1,16 +1,9 @@
 import { EventEmitter } from 'events';
 import AutoReconnectTCPClient from './AutoReconnectTCPClient';
-import { AgentConfiguration } from '../models/agent';
-// @ts-ignore
-import { Bzip2 } from 'compressjs';
-
-interface MapData {
-  width: number;
-  height: number;
-  resolution: number;
-  origin: number[];
-  map_matrix: number[][];
-}
+import { convert1DTo2DMap, fixMapRotation } from '../utils/mapUtils';
+// import { patch } from '../utils/bsdiff';
+import { AgentConfiguration, Quaternion } from '../models/agent';
+import { MapData } from '../models/map';
 
 class AgentsCommService {
   static GENERAL_PORT = 48100;
@@ -36,7 +29,7 @@ class AgentsCommService {
     this.eventEmitter.on('statusData', callback);
   }
 
-  public onMapData(callback: (agentId: number, data: object) => void) {
+  public onMapData(callback: (agentId: number, data: MapData) => void) {
     this.eventEmitter.on('mapData', callback);
   }
 
@@ -97,31 +90,26 @@ class AgentsCommService {
           const data = JSON.parse(rawMsg.toString());
 
           this.eventEmitter.emit('statusData', agentId, {
-            linearVelo: data?.cmd_vel?.linear?.x ?? 0,
-            angularVelo: data?.cmd_vel?.angular?.z ?? 0,
-            heading: data?.position_robot?.pose?.orientation
-              ? quaternionToYaw(
-                data.position_robot.pose.orientation.x,
-                data.position_robot.pose.orientation.y,
-                data.position_robot.pose.orientation.z,
-                data.position_robot.pose.orientation.w)
+            linearVelo: data?.velocity?.linear?.x ?? 0,
+            angularVelo: data?.velocity?.angular?.z ?? 0,
+            heading: data?.pose?.orientation
+              ? quaternionToYaw(data.pose.orientation)
               : 0,
-            position: data?.position_robot?.pose?.position
-              ? [data.position_robot.pose.position.x, data.position_robot.pose.position.y]
+            position: data?.pose?.position
+              ? [data.pose.position.x, data.pose.position.y]
               : null
           });
 
           // only if map data is available
           if (data.map?.data?.length) {
-            let mapData = {
-              width: data.map.info.width,
-              height: data.map.info.height,
-              resolution: data.map.info.resolution,
-              origin: data.map.info.origin,
-              map_matrix: convert1DTo2DMap(data.map.data, data.map.info.width, data.map.info.height)
-            };
-            mapData = fixMapRotation(mapData);
-            
+            const mapData: MapData = fixMapRotation({
+              width: data.map.width,
+              height: data.map.height,
+              resolution: data.map.resolution,
+              origin: [data.map.origin.position.x, data.map.origin.position.y, data.map.origin.position.z],
+              mapMatrix: convert1DTo2DMap(data.map.data, data.map.width, data.map.height)
+            });
+
             this.eventEmitter.emit('mapData', agentId, mapData);
           }
         } catch (error) {
@@ -181,142 +169,10 @@ class AgentsCommService {
   }
 }
 
-function convert1DTo2DMap(array: number[], width: number, height: number) {
-  if (array.length !== width * height) {
-    throw new Error("The array size does not match the specified dimensions.");
-  }
-
-  const mapMatrix = [];
-  for (let y = 0; y < height; y++) {
-    const row = array.slice(y * width, (y + 1) * width);
-    mapMatrix.push(row);
-  }
-  return mapMatrix;
-}
-
-// Rotate map 90 degrees CCW and mirror horizontally for display
-function fixMapRotation(mapData: MapData): MapData {
-  const matrix = mapData.map_matrix;
-  const rows = matrix.length;
-  const cols = matrix[0].length;
-  const rotatedMatrix = Array.from({ length: cols }, () => Array(rows));
-
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      rotatedMatrix[cols - x - 1][rows - y - 1] = matrix[y][x];
-    }
-  }
-
-  return {
-    width: mapData.height,
-    height: mapData.width,
-    resolution: mapData.resolution,
-    origin: mapData.origin,
-    map_matrix: rotatedMatrix
-  };
-}
-
-function quaternionToYaw(x: number, y: number, z: number, w: number) {
+function quaternionToYaw({ x, y, z, w }: Quaternion) {
   const yawInRadians = Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
   const yawInDegrees = yawInRadians * (180 / Math.PI);
   return yawInDegrees;
-}
-
-// Function to apply the patch (BSDIFF4 format)
-function patch(srcBytes: Buffer, patchBytes: Buffer) {
-  const [lenDst, controlTuples, diffBlock, extraBlock] = parsePatchBfr(patchBytes) as [number, any[], Buffer, Buffer];
-
-  // Allocate buffer for the new data
-  const newData = Buffer.alloc(lenDst);
-
-  let oldPos = 0;
-  let newPos = 0;
-  let diffPtr = 0;
-  let extraPtr = 0;
-
-  for (const [x, y, z] of controlTuples) {
-      // Apply the diff block
-      for (let i = 0; i < x; i++) {
-          newData[newPos + i] = (srcBytes[oldPos + i] + diffBlock[diffPtr + i]) % 256;
-      }
-      diffPtr += x;
-      newPos += x;
-      oldPos += x;
-
-      // Copy the extra block
-      for (let i = 0; i < y; i++) {
-          newData[newPos + i] = extraBlock[extraPtr + i];
-      }
-      extraPtr += y;
-      newPos += y;
-
-      // Adjust oldPos for the next diff block
-      oldPos += z;
-  }
-
-  return newData;
-}
-
-function parsePatchBfr(buffer: Buffer, headerOnly: boolean = false) {
-  const MAGIC = 'BSDIFF40';
-  let offset = 0;
-
-  // Check the magic header
-  const magic = buffer.slice(offset, offset + 8);
-  offset += 8;
-  if (!magic.equals(Buffer.from(MAGIC))) {
-      throw new Error("Incorrect BSDIFF4 header");
-  }
-
-  // Read length headers
-  const lenControl = decodeInt64(buffer.slice(offset, offset + 8));
-  offset += 8;
-  const lenDiff = decodeInt64(buffer.slice(offset, offset + 8));
-  offset += 8;
-  const lenDst = decodeInt64(buffer.slice(offset, offset + 8));
-  offset += 8;
-
-  // Read and decompress the control header
-  const bcontrol = Buffer.from(Bzip2.decompressFile(buffer.slice(offset, offset + lenControl)));
-  offset += lenControl;
-  
-  const controlTuples = [];
-  for (let i = 0; i < bcontrol.length; i += 24) {
-      const x = decodeInt64(bcontrol.slice(i, i + 8));
-      const y = decodeInt64(bcontrol.slice(i + 8, i + 16));
-      const z = decodeInt64(bcontrol.slice(i + 16, i + 24));
-      controlTuples.push([x, y, z]);
-  }
-
-  if (headerOnly) {
-      return [lenControl, lenDiff, lenDst, controlTuples];
-  }
-
-  // Read and decompress the diff and extra blocks
-  const bdiff = Buffer.from(Bzip2.decompressFile(buffer.slice(offset, offset + lenDiff)));
-  offset += lenDiff;
-  const bextra = Buffer.from(Bzip2.decompressFile(buffer.slice(offset)));
-
-  return [lenDst, controlTuples, bdiff, bextra];
-}
-
-// Function to decode a 64-bit integer from an 8-byte buffer
-function decodeInt64(buffer: Buffer) {
-  if (!(buffer instanceof Buffer) || buffer.length !== 8) {
-      throw new TypeError("Expected 8-byte buffer");
-  }
-
-  let x = buffer[7] & 0x7f;  // Get the most significant byte, masking the sign bit
-  for (let i = 6; i >= 0; i--) {
-      x = (x << 8) | buffer[i];  // Shift left and OR with the next byte
-  }
-
-  // Check if the sign bit is set (negative number)
-  if (buffer[7] & 0x80) {
-      x = -x;
-  }
-
-  return x;
 }
 
 export default AgentsCommService;

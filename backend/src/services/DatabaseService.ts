@@ -132,9 +132,6 @@ export default class DatabaseService {
   }
 }
 
-
-
-
 // import { AgentConfiguration, AgentCondition } from "../models/agent";
 
 // interface AgentData extends AgentConfiguration {

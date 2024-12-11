@@ -65,3 +65,10 @@ export type Agent = AgentConfiguration & AgentCondition
 export type AgentsObj = {
   [id: number]: Omit<Agent, 'id'>
 }
+
+export interface AgentControlState {
+  agentId: number | null;
+  lastControlTimestamp: number;
+  linearX: number;
+  angularZ: number;
+}

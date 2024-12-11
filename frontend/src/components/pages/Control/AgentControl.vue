@@ -95,9 +95,9 @@ function isValid(value: any) {
           @click="() => onNavigate()"
         />
       </div>
-      <div class="mt-3">
+      <!-- <div class="mt-3">
         <Button type="button" label="Map Entire Room" class="!bg-primaryblue" />
-      </div>
+      </div> -->
     </div>
     <!-- <RecentLogs class="mt-8" />  -->
   </div>

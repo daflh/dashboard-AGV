@@ -1,29 +1,15 @@
 import fs from 'fs';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { PNG } from 'pngjs';
 import yaml from 'js-yaml';
-
-type Coordinate3D = [x: number, y: number, z: number];
-
-interface MapData {
-  width: number;
-  height: number;
-  resolution: number;
-  origin: Coordinate3D;
-  content: string; // base64 png
-}
-
-interface MapDataMatrix {
-  width: number;
-  height: number;
-  map_matrix: number[][];
-}
+import { convert1DTo2DMap, fixMapRotation, convertMapToPng } from '../utils/mapUtils';
+import { MapDataPNG, Coordinate3D } from '../models/map';
 
 class StaticMapService {
   public mapName: string;
   public isMapLoaded: boolean;
-  private mapData: MapData | null;
+  private mapData: MapDataPNG | null;
 
   constructor(mapName: string) {
     this.mapName = mapName;
@@ -31,7 +17,7 @@ class StaticMapService {
     this.mapData = null;
   }
 
-  public getMap(): MapData | null {
+  public getMap(): MapDataPNG | null {
     return this.isMapLoaded ? this.mapData : null;
   }
 
@@ -75,11 +61,11 @@ class StaticMapService {
 
       this.isMapLoaded = true;
       this.mapData = {
-        width: pngFile.height,
-        height: pngFile.width,
+        width: pngFile.width,
+        height: pngFile.height,
         resolution: mapResolution,
         origin: mapOrigin,
-        content: pngFileBuffer.toString('base64')
+        base64: pngFileBuffer.toString('base64')
       };
 
       console.log('StaticMap: Successfully loaded map ' + this.mapName);
@@ -108,40 +94,17 @@ class StaticMapService {
     
     // convert buffer to array of integers
     const pixels1D = [...pgmContent.subarray(maxValEndIdx+1)];
-    let mapData = {
+    const outFilePath = filePath.replace('.pgm', '.png');
+    const mapData = fixMapRotation({
       width: width,
       height: height,
-      map_matrix: convert1DTo2DMap(pixels1D, width, height)
-    };
-    mapData = fixMapRotation(mapData);
-    const pixels = mapData.map_matrix;
-    
-    const pngFile = new PNG({
-      width: mapData.width,
-      height: mapData.height
-    });
-    const outFilePath = filePath.replace('.pgm', '.png');
-  
-    for (let y = 0; y < pngFile.height; y++) {
-      for (let x = 0; x < pngFile.width; x++) {
-        const idx = (pngFile.width * y + x)
-        const pngIdx = idx << 2
-        let pixel = pixels[y][x] / maxVal * 255
-        if (pixels[y][x] === -1) pixel = 0
-  
-        pngFile.data[pngIdx] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 3] = pixels[y][x] >= 0 ? 0xff : 0x00
-      }
-    }
+      mapMatrix: convert1DTo2DMap(pixels1D, width, height)
+    }, false);
 
     try {
-      await new Promise<void>((resolve, reject) => {
-        pngFile.pack().pipe(fs.createWriteStream(outFilePath))
-          .on('finish', resolve)
-          .on('error', reject)
-      });
+      const mapDataPng = await convertMapToPng(mapData, maxVal);
+      await writeFile(outFilePath, mapDataPng.base64, 'base64');
+
       console.log('StaticMap: Successfully generating png');
     } catch (error) {
       console.error('StaticMap: Error when converting pgm to png:', error)
@@ -149,38 +112,4 @@ class StaticMapService {
   }
 }
 
-function convert1DTo2DMap(array: number[], width: number, height: number) {
-  if (array.length !== width * height) {
-    throw new Error("The array size does not match the specified dimensions.");
-  }
-
-  const mapMatrix = [];
-  for (let y = 0; y < height; y++) {
-    const row = array.slice(y * width, (y + 1) * width);
-    mapMatrix.push(row);
-  }
-  return mapMatrix;
-}
-
-// Rotate map 90 degrees CCW and mirror horizontally for display
-function fixMapRotation(mapData: MapDataMatrix): MapDataMatrix {
-  const matrix = mapData.map_matrix;
-  const rows = matrix.length;
-  const cols = matrix[0].length;
-  const rotatedMatrix = Array.from({ length: cols }, () => Array(rows));
-
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      rotatedMatrix[cols - x - 1][rows - y - 1] = matrix[y][x];
-    }
-  }
-
-  return {
-    width: mapData.height,
-    height: mapData.width,
-    map_matrix: rotatedMatrix
-  };
-}
-
 export default StaticMapService;
-export { MapData };

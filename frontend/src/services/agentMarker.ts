@@ -7,10 +7,11 @@ interface AgentsMarkerLayerId {
   [id: number]: number
 }
 
+const amrImageSize = [52, 94]; // adjust according to the image real size
 const amrIcon = L.icon({
   iconUrl: amrImage,
-  iconSize: [48/3, 70/3],
-  iconAnchor: [24/3, 35/3]
+  iconSize: [amrImageSize[0]/3.5, amrImageSize[1]/3.5],
+  iconAnchor: [amrImageSize[0]/7, amrImageSize[1]/7]
 });
 
 class AgentMarker {

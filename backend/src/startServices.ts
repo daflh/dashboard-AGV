@@ -1,23 +1,17 @@
 import { Server } from 'http';
 import { Socket } from 'socket.io';
-import { PNG } from 'pngjs';
 import WebSocketService from './services/WebSocketService';
 import StaticMapService from './services/StaticMapService';
 import AgentsCommService from './services/AgentsCommService';
 import DatabaseService from './services/DatabaseService';
 import DummyAgentsGenerator from './services/DummyAgentsGenerator';
-import { AgentCondition, AgentConfiguration, AgentsObj } from "./models/agent";
+import { AgentCondition, AgentConfiguration, AgentsObj, AgentControlState } from "./models/agent";
+import { MapData } from "./models/map";
 import { isTokenValid } from './auth';
+import { convertMapToPng } from './utils/mapUtils';
 
-const MAP_NAME = "basement"; // should not be hard-coded
+const MAP_NAME = "turtlebot"; // should not be hard-coded
 const USE_DUMMY_AGENTS = false; // for development & testing purpose
-
-interface AgentControlState {
-  agentId: number | null;
-  lastControlTimestamp: number;
-  linearX: number;
-  angularZ: number;
-}
 
 export default function startServices(httpServer: Server) {
   const webSocketService = new WebSocketService(httpServer);
@@ -95,45 +89,15 @@ export default function startServices(httpServer: Server) {
     }
   });
 
-  agentsCommService.onMapData(async (agentId, mapData: any) => {
-    const pixels = mapData.map_matrix;
-    const maxVal = 100;
-    const pngFile = new PNG({
-      width: mapData.width,
-      height: mapData.height
-    });
-    const chunks: any[] = [];
-  
-    for (let y = 0; y < pngFile.height; y++) {
-      for (let x = 0; x < pngFile.width; x++) {
-        const idx = (pngFile.width * y + x)
-        const pngIdx = idx << 2
-        let pixel = 255 - (pixels[y][x] / maxVal * 255)
-        if (pixels[y][x] === -1) pixel = 0
-  
-        pngFile.data[pngIdx] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 3] = pixels[y][x] >= 0 ? 0xff : 0x00
-      }
-    }
+  agentsCommService.onMapData(async (agentId, mapData: MapData) => {
+    const mapDataPng = await convertMapToPng(mapData, 100, true);
 
-    pngFile.pack();
-    pngFile.on('data', (chunk) => {
-      chunks.push(chunk);
-    });
-    pngFile.on('end', () => {
-      webSocketService.io.to('authenticatedRoom').emit('agent:mapUpdated', agentId, {
-        width: mapData.width,
-        height: mapData.height,
-        resolution: mapData.resolution,
-        origin: [
-          mapData.origin.position.x,
-          mapData.origin.position.y,
-          mapData.origin.position.z
-        ],
-        content: Buffer.concat(chunks).toString('base64')
-      });
+    webSocketService.io.to('authenticatedRoom').emit('agent:mapUpdated', agentId, {
+      width: mapData.width,
+      height: mapData.height,
+      resolution: mapData.resolution,
+      origin: mapData.origin,
+      content: mapDataPng.base64
     });
   });
 
@@ -262,10 +226,19 @@ export default function startServices(httpServer: Server) {
         await staticMapService.loadMap();
       }
 
-      socket.emit('staticMap:response', {
-        name: staticMapService.mapName,
-        data: staticMapService.getMap()
-      });
+      const mapData = staticMapService.getMap();
+      if (mapData) {
+        socket.emit('staticMap:response', {
+          name: staticMapService.mapName,
+          data: {
+            width: mapData.width,
+            height: mapData.height,
+            resolution: mapData.resolution,
+            origin: mapData.origin,
+            content: mapData.base64
+          }
+        });
+      }
     });
   });
 
