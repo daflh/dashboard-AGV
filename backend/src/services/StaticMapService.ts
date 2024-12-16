@@ -22,6 +22,11 @@ class StaticMapService {
   }
 
   public async loadMap() {
+    if (!this.mapName) {
+      console.error('StaticMap: Map name not provided');
+      return;
+    }
+
     const mapDirectory = `./maps/${this.mapName}`;
     if (!fs.existsSync(mapDirectory)) {
       console.error('StaticMap: Error reading map: Map directory not found');

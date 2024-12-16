@@ -10,12 +10,11 @@ import { MapData } from "./models/map";
 import { isTokenValid } from './auth';
 import { convertMapToPng } from './utils/mapUtils';
 
-const MAP_NAME = "turtlebot"; // should not be hard-coded
 const USE_DUMMY_AGENTS = false; // for development & testing purpose
 
 export default function startServices(httpServer: Server) {
   const webSocketService = new WebSocketService(httpServer);
-  const staticMapService = new StaticMapService(MAP_NAME);
+  const staticMapService = new StaticMapService(process.env.STATIC_MAP_NAME || '');
   const agentsCommService = new AgentsCommService();
   const databaseService = new DatabaseService(); // Using Prisma-based DatabaseService
   const dummyAgentGen = new DummyAgentsGenerator();

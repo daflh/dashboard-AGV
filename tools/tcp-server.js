@@ -7,11 +7,16 @@ function randomInt(min, max) {
 }
 
 const fileContent = fs.readFileSync('robot-data-example/global-costmap.json').toString();
-let dataNice = JSON.parse(fileContent);
+let dataRaw = JSON.parse(fileContent);
 // console.log(fileJson)
 
-dataNice = {
-  payload: dataNice
+const dataNice = {
+  payload: {
+    velocity: dataRaw.velocity,
+    pose: dataRaw.pose,
+    ...dataRaw.map ? { map: dataRaw.map } : {},
+    ...dataRaw.global_costmap ? { global_costmap: dataRaw.global_costmap } : {}
+  }
 };
 
 const server = net.createServer(function(socket) {
@@ -29,17 +34,21 @@ const server = net.createServer(function(socket) {
     dataNice.payload.pose.position.y = 0 + Math.floor(Date.now()/1000%10)/10*4;
     dataNice.payload.pose.orientation.z = 0.5;
     dataNice.payload.pose.orientation.w = 0 + Math.floor(Date.now()/1000%10)/10;
-    console.log(dataNice.payload.pose)
+    console.log(dataNice.payload)
   
     const str = JSON.stringify(dataNice)
-    const magicNumber = Buffer.from('fe01', 'hex');
-    const strLength = Buffer.alloc(4);
-    strLength.writeUInt32BE(str.length, 0);
-    const strContent = Buffer.from(str, 'utf-8');
+    const magicNumber = Buffer.from('R1');
+    const strContent = zlib.deflateSync(str);
+    const strLength = Buffer.alloc(3);
+    // console.log(strContent.length);
+    strLength.writeUIntBE(strContent.length, 0, 3);
+    const checksumWaton = Buffer.from('SU');
 
     // console.log(Date.now());
     // socket.write(`{"cmd_vel": {"linear": {"x": ${randomInt(1, 8)},"y": 9.0,"z": 11.0},"angular": {"x": 1.0,"y": 2.0,"z": ${randomInt(1, 8)}}}}`);
-    socket.write(Buffer.concat([magicNumber, strLength, strContent]));
+    const toSend = Buffer.concat([magicNumber, strLength, strContent, checksumWaton]);
+    socket.write(toSend);
+    console.log(toSend);
   }, 500);
 });
 
