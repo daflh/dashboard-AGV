@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import CoordConversion from '@/utils/CoordConversion';
+import agentMarker from '@/services/agentMarker';
 import { Agent } from '@/types/agent';
 import { SlamMap } from '@/types/slam';
 
@@ -14,14 +14,34 @@ class LeafletMap {
       className: 'slam-map'
     });
     this.agentsLayerGroup = L.layerGroup();
+    agentMarker.setLayerGroup(this.agentsLayerGroup);
   }
 
   public initializeMap() {
+    // set bottom right as (0, 0)
+    const SimpleCRSMod = L.extend({}, L.CRS.Simple, {
+      transformation: L.transformation(-1, 0, -1, 0)
+    });
+
     this.map = L.map('leaflet-map', {
-      crs: L.CRS.Simple, // use flat surface (x y) coordinate
+      crs: SimpleCRSMod, // use flat surface (x y) coordinate
       attributionControl: false,
       zoomControl: false
     });
+
+    this.map.setView([0, 0], 6);
+
+    // coordinate (0, 0) marker
+    const mapCenterIcon = L.divIcon({
+      html: '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M0 39H40" stroke="#008000" stroke-width="2"/><path d="M39 40V0" stroke="#0000FF" stroke-width="2"/></svg>',
+      iconSize: [30, 30],
+      iconAnchor: [30, 30],
+      className: '!border-0'
+    });
+    L.marker(
+      [0, 0],
+      { icon: mapCenterIcon }
+    ).addTo(this.map);
 
     // add zoom in/out control
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
@@ -37,15 +57,18 @@ class LeafletMap {
     }
     
     const slamMapBounds = L.latLngBounds([
-      [0, 0],
-      CoordConversion.slamToLeaflet([slamMapData.width, slamMapData.height])
+      [
+        slamMapData.origin[0],
+        slamMapData.origin[1]
+      ],
+      [
+        slamMapData.width * slamMapData.resolution + slamMapData.origin[0],
+        slamMapData.height * slamMapData.resolution + slamMapData.origin[1]
+      ]
     ]);
     const slamMapImg = 'data:image/png;base64,' + slamMapData.content;
     this.slamMapLayer.setBounds(slamMapBounds);
     this.slamMapLayer.setUrl(slamMapImg);
-    
-    // set view to the center of SLAM map
-    this.map.setView(slamMapBounds.getCenter(), 11);
   }
 
   public setAgents(agents: Agent[]) {
@@ -59,12 +82,7 @@ class LeafletMap {
 
     agents.forEach((agent) => {
       if (agent.position) {
-        L.circle(CoordConversion.slamToLeaflet(agent.position), {
-          radius: 0.0025,
-          color: 'red',
-          weight: 3,
-          fillColor: 'transparent'
-        }).addTo(this.agentsLayerGroup);
+        agentMarker.setAgentMarker(agent.id, agent.position, agent.heading ?? 0);
       }
     });
   }

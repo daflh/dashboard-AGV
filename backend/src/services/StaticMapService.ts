@@ -1,23 +1,15 @@
 import fs from 'fs';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { PNG } from 'pngjs';
 import yaml from 'js-yaml';
+import { convert1DTo2DMap, fixMapRotation, convertMapToPng } from '../utils/mapUtils';
+import { MapDataPNG, Coordinate3D } from '../models/map';
 
-type Coordinate3D = [x: number, y: number, z: number];
-
-interface MapData {
-  width: number;
-  height: number;
-  resolution: number;
-  origin: Coordinate3D;
-  content: string; // base64 png
-}
-
-class MapProviderService {
-  private mapName: string;
-  private isMapLoaded: boolean;
-  private mapData: MapData | null;
+class StaticMapService {
+  public mapName: string;
+  public isMapLoaded: boolean;
+  private mapData: MapDataPNG | null;
 
   constructor(mapName: string) {
     this.mapName = mapName;
@@ -25,14 +17,14 @@ class MapProviderService {
     this.mapData = null;
   }
 
-  public getMap(): MapData | null {
+  public getMap(): MapDataPNG | null {
     return this.isMapLoaded ? this.mapData : null;
   }
 
   public async loadMap() {
     const mapDirectory = `./maps/${this.mapName}`;
     if (!fs.existsSync(mapDirectory)) {
-      console.error('MapProvider: Error reading map: Map directory not found');
+      console.error('StaticMap: Error reading map: Map directory not found');
       return;
     }
 
@@ -73,12 +65,12 @@ class MapProviderService {
         height: pngFile.height,
         resolution: mapResolution,
         origin: mapOrigin,
-        content: pngFileBuffer.toString('base64')
+        base64: pngFileBuffer.toString('base64')
       };
 
-      console.log('MapProvider: Successfully loaded map ' + this.mapName);
+      console.log('StaticMap: Successfully loaded map ' + this.mapName);
     } catch (error) {
-      console.error('MapProvider: Error reading png file:', error)
+      console.error('StaticMap: Error reading png file:', error)
     }
   }
 
@@ -88,7 +80,7 @@ class MapProviderService {
     const magicNumEndIdx = pgmContent.indexOf('\n');
     const magicNumber = pgmContent.subarray(0, magicNumEndIdx).toString();
     if (magicNumber !== 'P5') {
-      console.error('MapProvider: Error reading map: Not a pgm file');
+      console.error('StaticMap: Error reading map: Not a pgm file');
       return;
     }
   
@@ -101,36 +93,23 @@ class MapProviderService {
     const maxVal = parseInt(maxValStr);
     
     // convert buffer to array of integers
-    const pixels = [...pgmContent.subarray(maxValEndIdx+1)];
-    
-    const pngFile = new PNG({ width, height });
+    const pixels1D = [...pgmContent.subarray(maxValEndIdx+1)];
     const outFilePath = filePath.replace('.pgm', '.png');
-  
-    for (let y = 0; y < pngFile.height; y++) {
-      for (let x = 0; x < pngFile.width; x++) {
-        const idx = (pngFile.width * y + x)
-        const pngIdx = idx << 2
-        const pixel = pixels[idx] / maxVal * 255
-  
-        pngFile.data[pngIdx] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
-        pngFile.data[pngIdx + 3] = 0xff
-      }
-    }
+    const mapData = fixMapRotation({
+      width: width,
+      height: height,
+      mapMatrix: convert1DTo2DMap(pixels1D, width, height)
+    }, false);
 
     try {
-      await new Promise<void>((resolve, reject) => {
-        pngFile.pack().pipe(fs.createWriteStream(outFilePath))
-          .on('finish', resolve)
-          .on('error', reject)
-      });
-      console.log('MapProvider: Successfully generating png');
+      const mapDataPng = await convertMapToPng(mapData, maxVal);
+      await writeFile(outFilePath, mapDataPng.base64, 'base64');
+
+      console.log('StaticMap: Successfully generating png');
     } catch (error) {
-      console.error('MapProvider: Error when converting pgm to png:', error)
+      console.error('StaticMap: Error when converting pgm to png:', error)
     }
   }
 }
 
-export default MapProviderService;
-export { MapData };
+export default StaticMapService;

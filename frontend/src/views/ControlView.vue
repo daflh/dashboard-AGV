@@ -2,7 +2,6 @@
 import { ref, watch, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
 import { useMainStore } from '@/stores/main';
 import leafletMap from '@/services/leafletMap';
-import CoordConversion from '@/utils/CoordConversion';
 import UserLayout from '@/components/UserLayout.vue'
 import AgentList from '@/components/pages/Control/AgentList.vue'
 import AgentControl from '@/components/pages/Control/AgentControl.vue'
@@ -38,7 +37,7 @@ onMounted(() => {
     mainStore.controlMapContextMenu = {
       isVisible: true,
       anchorPosition: [data.containerPoint.x, data.containerPoint.y],
-      coordinate: CoordConversion.leafletToSlam([data.latlng.lat, data.latlng.lng])
+      coordinate: [data.latlng.lat, data.latlng.lng] // reversed because the map is rotated 90 deg
     }
   });
   
@@ -57,7 +56,7 @@ onMounted(() => {
       <div class="w-[65%] shrink-0 relative">
         <div id="leaflet-map" class="w-full h-full outline-none z-30" />
         <MapButtons />
-        <MapContextMenu />
+        <MapContextMenu :agent="selectedAgent" />
       </div>
       <!-- Right Side -->
       <div class="flex px-10 py-8 grow">

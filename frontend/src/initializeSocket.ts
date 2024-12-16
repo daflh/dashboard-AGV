@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import agentMarker from '@/services/agentMarker';
 import { useMainStore } from '@/stores/main';
 import { setJwtToken } from '@/utils';
 import { Agent, AgentCondition } from '@/types/agent';
@@ -35,7 +36,7 @@ function initializeSocket() {
   });
 
   socket.emit('site:getAll', (sitesData) => {
-    mainStore.sites = sitesData.map(site => ({ label: site.name, value: site.id })); // Store sites in mainStore with label-value format
+    mainStore.sites = sitesData.map((site) => ({ label: site.name, value: site.id }));
   });
 
   socket.on('agent:updated', (agentId: number, agentData: AgentCondition) => {
@@ -44,6 +45,14 @@ function initializeSocket() {
       mainStore.agents[agentIndex] = {
         ...mainStore.agents[agentIndex],
         ...agentData
+      };
+
+      if (mainStore.agents[agentIndex]?.position) {
+        agentMarker.setAgentMarker(
+          agentId,
+          mainStore.agents[agentIndex].position,
+          mainStore.agents[agentIndex].heading ?? 0
+        );
       }
     }
   });
@@ -52,8 +61,27 @@ function initializeSocket() {
     mainStore.slamMap = mapData;
   });
 
+  socket.on('staticMap:response', (map) => {
+    if (map.data) {
+      mainStore.slamMap = map.data;
+      
+      toast.add({
+        severity: 'info',
+        summary: 'Static map received',
+        detail: 'Map name: ' + map.name,
+        life: 3000
+      });
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Static map not available',
+        detail: 'Map name: ' + map.name,
+        life: 3000
+      });
+    }
+  });
+
   mainStore.socket = socket;
 }
 
 export default initializeSocket;
-
