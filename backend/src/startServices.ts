@@ -93,6 +93,7 @@ export default function startServices(httpServer: Server) {
     const mapDataPng = await convertMapToPng(mapData, 100, true);
 
     webSocketService.io.to('authenticatedRoom').emit('agent:mapUpdated', agentId, {
+      type: mapData.type || 'static',
       width: mapData.width,
       height: mapData.height,
       resolution: mapData.resolution,

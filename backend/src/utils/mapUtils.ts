@@ -29,10 +29,9 @@ export function fixMapRotation(mapData: MapData, mirror = true): MapData {
   }
 
   return {
-    width: mapData.height,
+    ...mapData,
+    width: mapData.height, // flip width and height because of rotation
     height: mapData.width,
-    resolution: mapData.resolution,
-    origin: mapData.origin,
     mapMatrix: rotatedMatrix
   };
 }
@@ -48,16 +47,25 @@ export async function convertMapToPng(
 
   for (let y = 0; y < pngFile.height; y++) {
     for (let x = 0; x < pngFile.width; x++) {
+      const val = pixels[y][x];
       const idx = (pngFile.width * y + x)
       const pngIdx = idx << 2
-      let pixel = pixels[y][x] / maxVal * 255
+      let pixel = val / maxVal * 255
       if (isValInverted) pixel = 255 - pixel
-      if (pixels[y][x] === -1) pixel = 0
+      if (val === -1) pixel = 0
 
-      pngFile.data[pngIdx] = Math.min(pixel, 255)
-      pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
-      pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
-      pngFile.data[pngIdx + 3] = pixels[y][x] >= 0 ? 0xff : 0x00
+      if (!mapData.type || mapData.type === 'static') {
+        pngFile.data[pngIdx] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 1] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 2] = Math.min(pixel, 255)
+        pngFile.data[pngIdx + 3] = val >= 0 ? 0xff : 0x00
+      } else if (mapData.type === 'globalCostmap') {
+        // show 50% transparent purple color, but remove uncertain pixels
+        pngFile.data[pngIdx] = 128
+        pngFile.data[pngIdx + 1] = 0
+        pngFile.data[pngIdx + 2] = 128
+        pngFile.data[pngIdx + 3] = val >= 99 ? 128 : 0
+      }
     }
   }
 

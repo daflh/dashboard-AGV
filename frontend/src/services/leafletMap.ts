@@ -6,11 +6,15 @@ import { SlamMap } from '@/types/slam';
 class LeafletMap {
   public map: L.Map | null;
   private slamMapLayer: L.ImageOverlay;
+  private costMapLayer: L.ImageOverlay;
   private agentsLayerGroup: L.LayerGroup;
   
   constructor() {
     this.map = null;
     this.slamMapLayer = L.imageOverlay('', [[0, 0], [0, 0]], {
+      className: 'slam-map'
+    });
+    this.costMapLayer = L.imageOverlay('', [[0, 0], [0, 0]], {
       className: 'slam-map'
     });
     this.agentsLayerGroup = L.layerGroup();
@@ -47,6 +51,7 @@ class LeafletMap {
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
     this.slamMapLayer.addTo(this.map);
+    this.costMapLayer.addTo(this.map);
     this.agentsLayerGroup.addTo(this.map);
   }
 
@@ -69,6 +74,27 @@ class LeafletMap {
     const slamMapImg = 'data:image/png;base64,' + slamMapData.content;
     this.slamMapLayer.setBounds(slamMapBounds);
     this.slamMapLayer.setUrl(slamMapImg);
+  }
+
+  public setCostMap(costMapData: SlamMap) {
+    if (!this.map) {
+      console.error('Leaflet map is not initialized');
+      return;
+    }
+    
+    const costMapBounds = L.latLngBounds([
+      [
+        costMapData.origin[0],
+        costMapData.origin[1]
+      ],
+      [
+        costMapData.width * costMapData.resolution + costMapData.origin[0],
+        costMapData.height * costMapData.resolution + costMapData.origin[1]
+      ]
+    ]);
+    const costMapImg = 'data:image/png;base64,' + costMapData.content;
+    this.costMapLayer.setBounds(costMapBounds);
+    this.costMapLayer.setUrl(costMapImg);
   }
 
   public setAgents(agents: Agent[]) {

@@ -1,6 +1,7 @@
 export type Coordinate3D = [x: number, y: number, z: number];
 
 export interface MapData {
+  type?: 'static' | 'globalCostmap' | 'localCostmap';
   width: number;
   height: number;
   resolution?: number;
@@ -8,10 +9,6 @@ export interface MapData {
   mapMatrix: number[][];
 }
 
-export interface MapDataPNG {
-  width: number;
-  height: number;
-  resolution?: number;
-  origin?: Coordinate3D;
+export interface MapDataPNG extends Omit<MapData, 'mapMatrix'> {
   base64: string; // base64 png
 }

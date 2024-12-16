@@ -32,6 +32,10 @@ onMounted(() => {
     if (slamMap) leafletMap.setSlamMap(slamMap);
   }, { immediate: true });
 
+  watch(() => mainStore.costMap, (costMap) => {
+    if (costMap) leafletMap.setCostMap(costMap);
+  }, { immediate: true });
+
   // add context menu listener
   leafletMap.map?.on('contextmenu', (data) => {
     mainStore.controlMapContextMenu = {

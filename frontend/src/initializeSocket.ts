@@ -17,6 +17,8 @@ function initializeSocket() {
   });
 
   socket.on('connect_error', (err) => {
+    if (err.message === 'xhr poll error') return;
+
     toast.add({
       severity: 'error',
       summary: 'JWT verification failed',
@@ -58,7 +60,11 @@ function initializeSocket() {
   });
 
   socket.on('agent:mapUpdated', (agentId: number, mapData) => {
-    mainStore.slamMap = mapData;
+    if (mapData.type === 'static') {
+      mainStore.slamMap = mapData;
+    } else if (mapData.type === 'globalCostmap') {
+      mainStore.costMap = mapData;
+    }
   });
 
   socket.on('staticMap:response', (map) => {

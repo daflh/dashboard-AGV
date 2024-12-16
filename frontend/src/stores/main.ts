@@ -9,6 +9,7 @@ interface MainState {
   jwtToken: string | null,
   socket: Socket | null,
   slamMap: SlamMap | null,
+  costMap: SlamMap | null,
   agents: Agent[],
   sites: { label: string, value: number }[], // Add sites to MainState
   isAgentsLoaded: boolean,
@@ -25,6 +26,7 @@ export const useMainStore = defineStore('main', {
     jwtToken: null,
     socket: null,
     slamMap: null,
+    costMap: null,
     agents: [],
     sites: [], // Initialize sites as an empty array
     isAgentsLoaded: false,

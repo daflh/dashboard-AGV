@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import zlib from 'zlib';
 import AutoReconnectTCPClient from './AutoReconnectTCPClient';
 import { convert1DTo2DMap, fixMapRotation } from '../utils/mapUtils';
 // import { patch } from '../utils/bsdiff';
@@ -11,6 +12,8 @@ class AgentsCommService {
   static MAP_DATA_PORT = 48102;
   static CONTROL_CMD_PORT = 48201;
   static NAVIGATION_CMD_PORT = 48202;
+
+  static MSG_HEAD = 'R';
 
   private eventEmitter: EventEmitter;
 
@@ -76,38 +79,58 @@ class AgentsCommService {
       // console.log('after', receivedBuf);
 
       if (expectedLength === 0) {
-        if (receivedBuf.length >= 6 && receivedBuf.subarray(0, 2).toString('hex') === 'fe01') {
-          expectedLength = receivedBuf.readUInt32BE(2);
-          receivedBuf = receivedBuf.subarray(6);
+        if (receivedBuf.length >= 6 && receivedBuf[0] === AgentsCommService.MSG_HEAD.charCodeAt(0)) {
+          expectedLength = receivedBuf.readUintBE(2, 3);
+          // remove msg header and checksum
+          receivedBuf = receivedBuf.subarray(5, -2);
         }
       }
 
       // If we have enough data for the full message
       if (expectedLength > 0 && receivedBuf.length >= expectedLength) {
-        const rawMsg = receivedBuf.subarray(0, expectedLength).toString('utf-8');
-        
         try {
-          const data = JSON.parse(rawMsg.toString());
+          const rawMsg = zlib.inflateSync(receivedBuf).toString('utf-8');
+          const msg = JSON.parse(rawMsg.toString());
+          const msgPayload = msg.payload;
+          // console.log(msgPayload);
+          // console.log(zlib.inflateSync(receivedBuf).length, 'down to', receivedBuf.length)
 
           this.eventEmitter.emit('statusData', agentId, {
-            linearVelo: data?.velocity?.linear?.x ?? 0,
-            angularVelo: data?.velocity?.angular?.z ?? 0,
-            heading: data?.pose?.orientation
-              ? quaternionToYaw(data.pose.orientation)
+            linearVelo: msgPayload?.velocity?.linear?.x ?? 0,
+            angularVelo: msgPayload?.velocity?.angular?.z ?? 0,
+            heading: msgPayload?.pose?.orientation
+              ? quaternionToYaw(msgPayload.pose.orientation)
               : 0,
-            position: data?.pose?.position
-              ? [data.pose.position.x, data.pose.position.y]
+            position: msgPayload?.pose?.position
+              ? [msgPayload.pose.position.x, msgPayload.pose.position.y]
               : null
           });
 
           // only if map data is available
-          if (data.map?.data?.length) {
+          if (msgPayload.map?.data?.length) {
+            const msgMap = msgPayload.map;
+            const msgMapOrigPos = msgMap.origin.position;
             const mapData: MapData = fixMapRotation({
-              width: data.map.width,
-              height: data.map.height,
-              resolution: data.map.resolution,
-              origin: [data.map.origin.position.x, data.map.origin.position.y, data.map.origin.position.z],
-              mapMatrix: convert1DTo2DMap(data.map.data, data.map.width, data.map.height)
+              width: msgMap.width,
+              height: msgMap.height,
+              resolution: msgMap.resolution,
+              origin: [msgMapOrigPos.x, msgMapOrigPos.y, msgMapOrigPos.z],
+              mapMatrix: convert1DTo2DMap(msgMap.data, msgMap.width, msgMap.height)
+            });
+
+            this.eventEmitter.emit('mapData', agentId, mapData);
+          }
+
+          if (msgPayload.global_costmap?.data?.length) {
+            const msgGcmap = msgPayload.global_costmap;
+            const msgGcmapOrigPos = msgGcmap.info.origin.position;
+            const mapData: MapData = fixMapRotation({
+              type: 'globalCostmap',
+              width: msgGcmap.info.width,
+              height: msgGcmap.info.height,
+              resolution: msgGcmap.info.resolution,
+              origin: [msgGcmapOrigPos.x, msgGcmapOrigPos.y, msgGcmapOrigPos.z],
+              mapMatrix: convert1DTo2DMap(msgGcmap.data, msgGcmap.info.width, msgGcmap.info.height)
             });
 
             this.eventEmitter.emit('mapData', agentId, mapData);
@@ -123,8 +146,15 @@ class AgentsCommService {
 
     this.eventEmitter.on('controlCmd', (cmdAgentId: number, linearX: number, angularZ: number) => {
       if (agentId !== cmdAgentId) return;
-      const controlData = { command: 'keyboard', linear_x: linearX, angular_z: angularZ };
-      generalTcpClient.write(JSON.stringify(controlData));
+      const controlData = {
+        type: 'command_control',
+        payload: {
+          linear_x: linearX,
+          angular_z: angularZ
+        }
+      };
+      const buffToSend = packMessage(JSON.stringify(controlData));
+      generalTcpClient.write(buffToSend);
     });
 
     this.eventEmitter.on('navigationCmd', (cmdAgentId: number, navigationStr: string) => {
@@ -173,6 +203,15 @@ function quaternionToYaw({ x, y, z, w }: Quaternion) {
   const yawInRadians = Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
   const yawInDegrees = yawInRadians * (180 / Math.PI);
   return yawInDegrees;
+}
+
+function packMessage(payload: string): Buffer {
+  const HEAD = 'R\x01';
+  const compressedPayload = zlib.deflateSync(payload);
+  const length = Buffer.alloc(3);
+  length.writeUIntBE(compressedPayload.length, 0, 3);
+  const packet = Buffer.concat([Buffer.from(HEAD), length, compressedPayload]);
+  return packet
 }
 
 export default AgentsCommService;
