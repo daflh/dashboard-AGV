@@ -201,7 +201,7 @@ export default function startServices(httpServer: Server) {
 
       const agentsArr = objectToArray(agents);
       for (const agent of agentsArr) {
-        agent.site = "Site " + agent.siteId;
+        // agent.site = "Site " + agent.siteId;
         delete agent.siteId;
         agent.company = "Company " + agent.companyId;
         delete agent.companyId;
@@ -232,6 +232,23 @@ export default function startServices(httpServer: Server) {
       }
     });
 
+// Create site request
+socket.on("site:create", async (newSite: { name: string }, callback) => {
+  try {
+    if (!newSite.name) throw new Error("Site name is required");
+
+    const site = await databaseService.createSite(newSite.name, 1);
+    callback({ success: true, site });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error creating site:", error.message);
+      callback({ success: false, message: error.message });
+    } else {
+      console.error("Unexpected error:", error);
+      callback({ success: false, message: "An unexpected error occurred" });
+    }
+  }
+});
 
     // Send direction control data at 2 Hz
     setInterval(() => {

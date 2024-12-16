@@ -108,6 +108,21 @@ export default class DatabaseService {
     }
   }
 
+  // Add a new site to the database
+  public async createSite(name: string, companyId: number): Promise<{ id: number; name: string }> {
+    try {
+      const site = await this.prisma.sites.create({
+        data: {
+          name,
+          company_id: companyId,
+        },
+      });
+      return site;
+    } catch (error) {
+      console.error("Error creating site:", error);
+      throw error;
+    }
+  }
   
   // Fetch a user by username
   public async getUser(username: string) {

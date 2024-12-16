@@ -10,7 +10,7 @@ import UserLayout from "@/components/UserLayout.vue";
 import AgentSearchFilter from "@/components/AgentSearchFilter.vue";
 import AgentCard from "@/components/pages/Agents/AgentCard.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
-import { Agent } from '@/types/agent';
+import { Agent } from "@/types/agent";
 
 const mainStore = useMainStore();
 const { socket } = mainStore;
@@ -19,7 +19,7 @@ const agentName = ref("");
 const agentIpAddress = ref("");
 const agentHsmKey = ref("");
 const agentRegisterSite = ref(null); // Update to handle dropdown selection
-
+const newSiteName = ref(""); // Untuk nama site baru
 const successMessage = ref("");
 const errorMessage = ref("");
 
@@ -35,8 +35,11 @@ const displayAddAgentDialog = ref(false);
 
 const filteredAgents = computed(() => {
   return mainStore.agents.filter((agent) => {
-    const matchesSearch = agent.name.toLowerCase().includes(searchValue.value.toLowerCase());
-    const matchesTags = selectedTags.value.length === 0 || selectedTags.value.includes(agent.status ?? '');
+    const matchesSearch = agent.name
+      .toLowerCase()
+      .includes(searchValue.value.toLowerCase());
+    const matchesTags =
+      selectedTags.value.length === 0 || selectedTags.value.includes(agent.status ?? "");
     return matchesSearch && matchesTags;
   });
 });
@@ -45,7 +48,33 @@ const toggleAddAgentDialog = () => {
   displayAddAgentDialog.value = !displayAddAgentDialog.value;
 };
 
+const onSiteSelectionChange = () => {
+  if (agentRegisterSite.value === "new") {
+    newSiteName.value = ""; // Reset nama site baru jika opsi dipilih
+  }
+};
+
 const submitAgent = () => {
+  if (agentRegisterSite.value === "new" && newSiteName.value.trim()) {
+    // Emit event untuk membuat site baru
+    if (socket !== null) {
+      socket.emit("site:create", { name: newSiteName.value }, (response) => {
+        if (response.success) {
+          const createdSite = response.site; // Terima site yang dibuat dari server
+          mainStore.sites.push({ label: createdSite.name, value: createdSite.id }); // Tambahkan site baru ke daftar
+          agentRegisterSite.value = createdSite.id; // Pilih site baru
+          saveAgent();
+        } else {
+          errorMessage.value = response.message; // Tampilkan pesan error jika gagal
+        }
+      });
+    }
+  } else {
+    saveAgent(); // Jika site dipilih dari dropdown, langsung simpan agent
+  }
+};
+
+const saveAgent = () => {
   const newAgent = {
     name: agentName.value,
     ipAddress: agentIpAddress.value,
@@ -54,10 +83,11 @@ const submitAgent = () => {
   };
 
   if (socket !== null) {
-    socket.emit('agent:add', newAgent, (response: { success: boolean, message: string }) => {
+    socket.emit("agent:add", newAgent, (response) => {
       if (response.success) {
         toggleAddAgentDialog();
-        socket.emit('agent:getAll', (agentsData: Agent[]) => {
+        resetAddAgentForm();
+        socket.emit("agent:getAll", (agentsData) => {
           mainStore.agents = agentsData;
         });
       } else {
@@ -66,12 +96,19 @@ const submitAgent = () => {
     });
   } else {
     errorMessage.value = "Socket connection is not available";
-    console.error("Socket is null, unable to submit agent");
   }
 };
 
+const resetAddAgentForm = () => {
+  agentName.value = "";
+  agentIpAddress.value = "";
+  agentHsmKey.value = "";
+  agentRegisterSite.value = null;
+  newSiteName.value = ""; // Jika Anda menambahkan input untuk site baru
+};
+
 const handleAgentDeleted = (agentId: number) => {
-  mainStore.agents = mainStore.agents.filter(agent => agent.id !== agentId);
+  mainStore.agents = mainStore.agents.filter((agent) => agent.id !== agentId);
 };
 </script>
 
@@ -102,31 +139,60 @@ const handleAgentDeleted = (agentId: number) => {
             @click="toggleAddAgentDialog"
             class="!bg-primaryblue hover:!bg-blue-800 !border-primaryblue"
           />
-          <Dialog v-model:visible="displayAddAgentDialog" header="Add New Agent" :draggable="false" modal>
+          <Dialog
+            v-model:visible="displayAddAgentDialog"
+            header="Add New Agent"
+            :draggable="false"
+            modal
+          >
             <div class="flex flex-col gap-4 w-96 p-1 bg-white">
               <div class="flex flex-col space-y-3 w-full">
                 <div>
                   <h1 class="font-medium mb-1">Agent Name</h1>
-                  <InputText v-model="agentName" placeholder="Enter Agent Name" class="w-full p-2 border rounded" />
-                </div>
-                <div>
-                  <h1 class="font-medium mb-1">Register Site</h1>
-                  <Dropdown 
-                    v-model="agentRegisterSite" 
-                    :options="mainStore.sites" 
-                    option-label="label" 
-                    option-value="value" 
-                    placeholder="Select a Site" 
-                    class="w-full border rounded" 
+                  <InputText
+                    v-model="agentName"
+                    placeholder="Enter Agent Name"
+                    class="w-full p-2 border rounded"
                   />
                 </div>
                 <div>
+                  <h1 class="font-medium mb-1">Register Site</h1>
+                  <Dropdown
+                    v-model="agentRegisterSite"
+                    :options="[
+                      ...mainStore.sites,
+                      { label: 'Add New Site', value: 'new' },
+                    ]"
+                    option-label="label"
+                    option-value="value"
+                    placeholder="Select a Site"
+                    class="w-full border rounded"
+                    @change="onSiteSelectionChange"
+                  />
+                  <div v-if="agentRegisterSite === 'new'">
+                    <InputText
+                      v-model="newSiteName"
+                      placeholder="Enter New Site Name"
+                      class="w-full p-2 border rounded mt-2"
+                    />
+                  </div>
+                </div>
+
+                <div>
                   <h1 class="font-medium mb-1">IP Address</h1>
-                  <InputText v-model="agentIpAddress" placeholder="Enter IP Address" class="w-full p-2 border rounded" />
+                  <InputText
+                    v-model="agentIpAddress"
+                    placeholder="Enter IP Address"
+                    class="w-full p-2 border rounded"
+                  />
                 </div>
                 <div>
                   <h1 class="font-medium mb-1">HSM Key</h1>
-                  <InputText v-model="agentHsmKey" placeholder="Enter HSM Key" class="w-full p-2 border rounded" />
+                  <InputText
+                    v-model="agentHsmKey"
+                    placeholder="Enter HSM Key"
+                    class="w-full p-2 border rounded"
+                  />
                 </div>
                 <Button
                   label="Save"
@@ -138,17 +204,19 @@ const handleAgentDeleted = (agentId: number) => {
           </Dialog>
         </div>
       </div>
-      
+
       <template v-if="mainStore.isAgentsLoaded">
         <div v-show="filteredAgents.length > 0" class="content-grid gap-6">
           <AgentCard
-          v-for="agent in filteredAgents"
-          :key="agent.name"
-          :agent="agent"
-          @agentDeleted="handleAgentDeleted"
+            v-for="agent in filteredAgents"
+            :key="agent.name"
+            :agent="agent"
+            @agentDeleted="handleAgentDeleted"
           />
         </div>
-        <div v-show="filteredAgents.length === 0" class="w-full text-center">No agents found</div>
+        <div v-show="filteredAgents.length === 0" class="w-full text-center">
+          No agents found
+        </div>
       </template>
       <LoadingSpinner v-else class="mx-auto mt-10" />
     </div>
