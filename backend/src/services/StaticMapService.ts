@@ -11,11 +11,18 @@ class StaticMapService {
   public isMapLoaded: boolean;
   private mapData: MapDataPNG | null;
 
-  constructor(mapName: string) {
-    this.mapName = mapName;
+
+  constructor() {
+    this.mapName = ''; // Default kosong, akan diatur melalui setMapName()
     this.isMapLoaded = false;
     this.mapData = null;
   }
+  
+  setMapName(mapName: string) {
+    this.mapName = mapName;
+    this.isMapLoaded = false; // Reset status agar map baru dimuat
+  }
+  
 
   public getMap(): MapDataPNG | null {
     return this.isMapLoaded ? this.mapData : null;

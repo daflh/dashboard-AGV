@@ -14,7 +14,7 @@ const USE_DUMMY_AGENTS = false; // for development & testing purpose
 
 export default function startServices(httpServer: Server) {
   const webSocketService = new WebSocketService(httpServer);
-  const staticMapService = new StaticMapService(process.env.STATIC_MAP_NAME || '');
+  const staticMapService = new StaticMapService();
   const agentsCommService = new AgentsCommService();
   const databaseService = new DatabaseService(); // Using Prisma-based DatabaseService
   const dummyAgentGen = new DummyAgentsGenerator();
@@ -238,25 +238,25 @@ socket.on("site:create", async (newSite: { name: string }, callback) => {
       agentsCommService.sendNavigationCmd(agentId, positionStr);
     });
     
-    socket.on('staticMap:request', async () => {
-      if (!staticMapService.isMapLoaded) {
-        await staticMapService.loadMap();
-      }
-
+    socket.on('staticMap:request', async ({ mapName }: { mapName: string }) => {
+      staticMapService.setMapName(mapName); // Tambahkan method ini di StaticMapService
+      await staticMapService.loadMap();
+    
       const mapData = staticMapService.getMap();
       if (mapData) {
         socket.emit('staticMap:response', {
-          name: staticMapService.mapName,
+          name: mapName,
           data: {
             width: mapData.width,
             height: mapData.height,
             resolution: mapData.resolution,
             origin: mapData.origin,
-            content: mapData.base64
-          }
+            content: mapData.base64,
+          },
         });
       }
     });
+    
   });
 
   // Ensure Prisma disconnects when the server shuts down
