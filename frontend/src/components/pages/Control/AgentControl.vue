@@ -4,6 +4,7 @@ import { useMainStore } from '@/stores/main'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
+import Badge from 'primevue/badge'
 // import RecentLogs from './RecentLogs.vue'
 import ControlPad from './ControlPad.vue'
 import { roundNumber } from '@/utils/numberUtils'
@@ -56,7 +57,15 @@ function isValid(value: any) {
       </div>
       <div>Back</div>
     </div>
-    <h2 class="text-lg mb-4 font-medium">Controlling <span class="font-semibold">{{ agent }}</span></h2>
+    <h2 class="text-lg mb-4 font-medium">
+      Controlling <span class="font-semibold">{{ agent }}</span>
+      <Badge
+        v-show="agentData.status === 'offline'"
+        value="Offline"
+        severity="danger"
+        class="ml-2.5 !font-medium"
+      ></Badge>
+    </h2>
     <div class="flex">
       <ControlPad class="mr-4" @direction="onControlDirection" />
       <div class="mt-2">
@@ -66,17 +75,17 @@ function isValid(value: any) {
     </div>
     <div class="mt-4 space-y-0.5">
       <div>Position: <span class="font-medium">
-        {{ isValid(agentData?.position?.[0]) ? roundNumber(agentData.position[0], 4) : '-' }},
-        {{ isValid(agentData?.position?.[1]) ? roundNumber(agentData.position[1], 4) : '-' }}
+        {{ isValid(agentData?.position?.[0]) ? roundNumber(agentData?.position?.[0] ?? 0, 4) : '-' }},
+        {{ isValid(agentData?.position?.[1]) ? roundNumber(agentData?.position?.[1] ?? 0, 4) : '-' }}
       </span></div>
       <div>Heading: <span class="font-medium">
-        {{ isValid(agentData?.heading) ? roundNumber(agentData.heading, 2) : '-' }} deg
+        {{ isValid(agentData?.heading) ? roundNumber(agentData?.heading ?? 0, 2) : '-' }} deg
       </span></div>
       <div>Linear vel: <span class="font-medium">
-        {{ isValid(agentData?.linearVelo) ? roundNumber(agentData.linearVelo, 2) : '-' }} m/s
+        {{ isValid(agentData?.linearVelo) ? roundNumber(agentData?.linearVelo ?? 0, 2) : '-' }} m/s
       </span></div>
       <div>Angular vel: <span class="font-medium">
-        {{ isValid(agentData?.angularVelo) ? roundNumber(agentData.angularVelo, 2) : '-' }} rad/s
+        {{ isValid(agentData?.angularVelo) ? roundNumber(agentData?.angularVelo ?? 0, 2) : '-' }} rad/s
       </span></div>
     </div>
     <div class="mt-8">

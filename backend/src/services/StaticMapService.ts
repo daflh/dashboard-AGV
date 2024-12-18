@@ -1,7 +1,6 @@
 import fs from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import path from 'path';
-import { PNG } from 'pngjs';
 import yaml from 'js-yaml';
 import { convert1DTo2DMap, fixMapRotation, convertMapToPng } from '../utils/mapUtils';
 import { MapDataPNG, Coordinate3D } from '../models/map';
@@ -11,21 +10,33 @@ class StaticMapService {
   public isMapLoaded: boolean;
   private mapData: MapDataPNG | null;
 
-
   constructor() {
     this.mapName = ''; // Default kosong, akan diatur melalui setMapName()
     this.isMapLoaded = false;
     this.mapData = null;
   }
   
-  setMapName(mapName: string) {
+  public setMapName(mapName: string) {
     this.mapName = mapName;
     this.isMapLoaded = false; // Reset status agar map baru dimuat
   }
-  
 
   public getMap(): MapDataPNG | null {
     return this.isMapLoaded ? this.mapData : null;
+  }
+
+  public getAvailableMaps() {
+    const mapsDir = './maps';
+    if (!fs.existsSync(mapsDir)) {
+      console.error('StaticMap: Error reading map: Map directory not found');
+      return [];
+    }
+
+    const mapNames = fs.readdirSync(mapsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
+
+    return mapNames;
   }
 
   public async loadMap() {
@@ -40,10 +51,10 @@ class StaticMapService {
       return;
     }
 
-    const pngFilePath = path.join(mapDirectory, 'map.png');
-    if (!fs.existsSync(pngFilePath)) {
-      // generate png from pgm
-      await this.convertMapPgmToPng(path.join(mapDirectory, 'map.pgm'));
+    const pgmFilePath = path.join(mapDirectory, 'map.pgm');
+    if (!fs.existsSync(pgmFilePath)) {
+      console.error('StaticMap: Error reading map: PGM file not found');
+      return;
     }
 
     // default res & origin values if metadata file not exists
@@ -58,55 +69,42 @@ class StaticMapService {
       if (mapMetadata.resolution) mapResolution = mapMetadata.resolution;
       if (mapMetadata.origin) mapOrigin = mapMetadata.origin;
     }
+
+    const pgmBuffer = await readFile(pgmFilePath);
+    const pngMapData = await this.convertMapPgmToPng(pgmBuffer);
+
+    if (!pngMapData) return;
+
+    this.isMapLoaded = true;
+    this.mapData = {
+      width: pngMapData.width,
+      height: pngMapData.height,
+      resolution: mapResolution,
+      origin: mapOrigin,
+      base64: pngMapData.base64
+    };
     
-    try {
-      const pngFileBuffer = await readFile(pngFilePath);
-      const pngFile = await new Promise<PNG>((resolve, reject) => {
-        new PNG().parse(pngFileBuffer, (error, data) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(data);
-          }
-        });
-      });
-
-      this.isMapLoaded = true;
-      this.mapData = {
-        width: pngFile.width,
-        height: pngFile.height,
-        resolution: mapResolution,
-        origin: mapOrigin,
-        base64: pngFileBuffer.toString('base64')
-      };
-
-      console.log('StaticMap: Successfully loaded map ' + this.mapName);
-    } catch (error) {
-      console.error('StaticMap: Error reading png file:', error)
-    }
+    console.log('StaticMap: Successfully loaded map ' + this.mapName);
   }
 
-  private async convertMapPgmToPng(filePath: string) {
-    const pgmContent = await readFile(filePath);
-    
-    const magicNumEndIdx = pgmContent.indexOf('\n');
-    const magicNumber = pgmContent.subarray(0, magicNumEndIdx).toString();
+  private async convertMapPgmToPng(pgmBuf: Buffer) {
+    const magicNumEndIdx = pgmBuf.indexOf('\n');
+    const magicNumber = pgmBuf.subarray(0, magicNumEndIdx).toString();
     if (magicNumber !== 'P5') {
       console.error('StaticMap: Error reading map: Not a pgm file');
       return;
     }
   
-    const dimsEndIdx = pgmContent.indexOf('\n', magicNumEndIdx+1);
-    const dims = pgmContent.subarray(magicNumEndIdx+1, dimsEndIdx).toString();
+    const dimsEndIdx = pgmBuf.indexOf('\n', magicNumEndIdx+1);
+    const dims = pgmBuf.subarray(magicNumEndIdx+1, dimsEndIdx).toString();
     const [width, height] = dims.split(' ').map((d) => parseInt(d));
   
-    const maxValEndIdx = pgmContent.indexOf('\n', dimsEndIdx+1);
-    const maxValStr = pgmContent.subarray(dimsEndIdx+1, maxValEndIdx).toString();
+    const maxValEndIdx = pgmBuf.indexOf('\n', dimsEndIdx+1);
+    const maxValStr = pgmBuf.subarray(dimsEndIdx+1, maxValEndIdx).toString();
     const maxVal = parseInt(maxValStr);
     
     // convert buffer to array of integers
-    const pixels1D = [...pgmContent.subarray(maxValEndIdx+1)];
-    const outFilePath = filePath.replace('.pgm', '.png');
+    const pixels1D = [...pgmBuf.subarray(maxValEndIdx+1)];
     const mapData = fixMapRotation({
       width: width,
       height: height,
@@ -115,11 +113,10 @@ class StaticMapService {
 
     try {
       const mapDataPng = await convertMapToPng(mapData, maxVal);
-      await writeFile(outFilePath, mapDataPng.base64, 'base64');
-
-      console.log('StaticMap: Successfully generating png');
+      return mapDataPng;
     } catch (error) {
-      console.error('StaticMap: Error when converting pgm to png:', error)
+      console.error('StaticMap: Error when converting pgm to png:', error);
+      return;
     }
   }
 }

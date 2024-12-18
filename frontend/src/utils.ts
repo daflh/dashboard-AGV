@@ -1,4 +1,5 @@
-const JWT_TOKEN_LS_KEY = 'jwtToken';
+const JWT_TOKEN_LS_KEY = 'edabot:jwtToken';
+const STATIC_MAP_NAME_LS_KEY = 'edabot:staticMapName';
 
 export function getBackendUrl() {
   const { protocol, host } = window.location;
@@ -21,5 +22,17 @@ export function setJwtToken(token: string | null) {
     localStorage.removeItem(JWT_TOKEN_LS_KEY);
   } else {
     localStorage.setItem(JWT_TOKEN_LS_KEY, token);
+  }
+}
+
+export function getStaticMapName() {
+  return localStorage.getItem(STATIC_MAP_NAME_LS_KEY);
+}
+
+export function setStaticMapName(mapName: string | null) {
+  if (mapName === null) {
+    localStorage.removeItem(STATIC_MAP_NAME_LS_KEY);
+  } else {
+    localStorage.setItem(STATIC_MAP_NAME_LS_KEY, mapName);
   }
 }

@@ -67,8 +67,9 @@ class LeafletMap {
         slamMapData.origin[1]
       ],
       [
-        slamMapData.width * slamMapData.resolution + slamMapData.origin[0],
-        slamMapData.height * slamMapData.resolution + slamMapData.origin[1]
+        // height and width are swapped because of the 90 deg transformation
+        slamMapData.height * slamMapData.resolution + slamMapData.origin[0],
+        slamMapData.width * slamMapData.resolution + slamMapData.origin[1]
       ]
     ]);
     const slamMapImg = 'data:image/png;base64,' + slamMapData.content;
@@ -88,8 +89,9 @@ class LeafletMap {
         costMapData.origin[1]
       ],
       [
-        costMapData.width * costMapData.resolution + costMapData.origin[0],
-        costMapData.height * costMapData.resolution + costMapData.origin[1]
+        // height and width are swapped because of the 90 deg transformation
+        costMapData.height * costMapData.resolution + costMapData.origin[0],
+        costMapData.width * costMapData.resolution + costMapData.origin[1]
       ]
     ]);
     const costMapImg = 'data:image/png;base64,' + costMapData.content;

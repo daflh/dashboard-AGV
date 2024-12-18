@@ -4,16 +4,27 @@ class AutoReconnectTCPClient extends Socket {
   private serverIp: string;
   private serverPort: number;
   private isConnected: boolean;
+  private reconnectTimeout: NodeJS.Timeout | null;
 
   constructor(serverIp: string, serverPort: number) {
     super();
     this.serverIp = serverIp;
     this.serverPort = serverPort;
     this.isConnected = false;
+    this.reconnectTimeout = null;
 
     // console.log(`tcp ${this.serverIp}:${this.serverPort} starting client`);
 
     this.connectAndRetryIndefinitely();
+  }
+
+  public disconnect() {
+    super.destroy();
+
+    if (this.reconnectTimeout) {
+      clearInterval(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
   }
 
   private connectAndRetryIndefinitely() {
@@ -33,8 +44,9 @@ class AutoReconnectTCPClient extends Socket {
     });
 
     this.connectToServer();
+
     // retry every 3 seconds
-    setInterval(() => {
+    this.reconnectTimeout = setInterval(() => {
       if (!this.isConnected) this.connectToServer();
     }, 3000);
   }

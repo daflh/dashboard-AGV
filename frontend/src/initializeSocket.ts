@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import agentMarker from '@/services/agentMarker';
 import { useMainStore } from '@/stores/main';
-import { setJwtToken } from '@/utils';
+import { setJwtToken, getStaticMapName } from '@/utils';
 import { Agent, AgentCondition } from '@/types/agent';
 // import { SlamMap } from '@/types/slam';
 
@@ -67,16 +67,25 @@ function initializeSocket() {
     }
   });
 
+  socket.emit('staticMap:getAvailableMaps', (availableMaps: string[]) => {
+    mainStore.availableStaticMaps = availableMaps;
+  });
+
+  const staticMapName = getStaticMapName();
+  if (staticMapName) {
+    socket.emit('staticMap:request', { mapName: staticMapName });
+  }
+
   socket.on('staticMap:response', (map) => {
     if (map.data) {
       mainStore.slamMap = map.data;
       
-      toast.add({
-        severity: 'info',
-        summary: 'Static map received',
-        detail: 'Map name: ' + map.name,
-        life: 3000
-      });
+      // toast.add({
+      //   severity: 'info',
+      //   summary: 'Static map received',
+      //   detail: 'Map name: ' + map.name,
+      //   life: 3000
+      // });
     } else {
       toast.add({
         severity: 'error',

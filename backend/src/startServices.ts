@@ -169,9 +169,9 @@ export default function startServices(httpServer: Server) {
       const agentsArr = objectToArray(agents);
       for (const agent of agentsArr) {
         // agent.site = "Site " + agent.siteId;
-        delete agent.siteId;
+        // delete agent.siteId;
         agent.company = "Company " + agent.companyId;
-        delete agent.companyId;
+        // delete agent.companyId
       }
 
       cb(agentsArr);
@@ -184,8 +184,8 @@ export default function startServices(httpServer: Server) {
       agentControlState.lastControlTimestamp = Date.now();
       if (direction === "forward") agentControlState.linearX = 0.25;
       else if (direction === "backward") agentControlState.linearX = -0.25;
-      else if (direction === "left") agentControlState.angularZ = 0.25;
-      else if (direction === "right") agentControlState.angularZ = -0.25;
+      else if (direction === "left") agentControlState.angularZ = 0.6;
+      else if (direction === "right") agentControlState.angularZ = -0.6;
     });
 
     // Fetch all sites

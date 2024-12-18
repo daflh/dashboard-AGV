@@ -30,13 +30,14 @@ class AgentMarker {
   public setAgentMarker(agentId: number, position: Position2D, heading: number) {
     if (!this.layerGroup) return;
 
-    if (this.agents[agentId]) {
-      const markerLayer = this.layerGroup.getLayer(this.agents[agentId]) as AgentMarkerLayer;
+    const markerLayer = this.layerGroup.getLayer(this.agents[agentId]) as AgentMarkerLayer;
+
+    if (markerLayer) {
       markerLayer?.setLatLng(position);
       markerLayer?.setRotationAngle(heading);
     } else {
       const flippedPosition: [number, number] = [position[1], position[0]];
-      const markerLayer = new AgentMarkerLayer(
+      const newMarkerLayer = new AgentMarkerLayer(
         flippedPosition,
         { icon: amrIcon, rotationAngle: heading }
       ).addTo(this.layerGroup);
@@ -51,7 +52,7 @@ class AgentMarker {
       // const svgElementBounds = [[0, 0], [4.9, 3.4]] as L.LatLngBoundsLiteral;
       // L.svgOverlay(svgElement, svgElementBounds).addTo(this.layerGroup);
 
-      this.agents[agentId] = this.layerGroup.getLayerId(markerLayer);
+      this.agents[agentId] = this.layerGroup.getLayerId(newMarkerLayer);
     }
   }
 }

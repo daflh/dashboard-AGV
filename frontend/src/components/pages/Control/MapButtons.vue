@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { useMainStore } from '@/stores/main';
 import MapFollowIcon from '@/components/icon/MapFollowIcon.vue';
 import MapIcon from '@/components/icon/MapIcon.vue';
 import Button from "primevue/button";
-
+import { setStaticMapName } from '@/utils';
 
 const mainStore = useMainStore();
 const showDialog = ref(false); // Control dialog visibility
 const selectedMap = ref('');   // Holds the selected map
-const availableMaps = ['basement', 'basement-lama', 'turtlebot']; // Static map options
+const availableMaps = computed(() => mainStore.availableStaticMaps); // Static map options
 
 const buttons = reactive([
   {
@@ -27,9 +27,11 @@ const buttons = reactive([
 const sendMapRequest = () => {
   if (selectedMap.value) {
     mainStore.socket?.emit('staticMap:request', { mapName: selectedMap.value });
+    setStaticMapName(selectedMap.value);
     showDialog.value = false; // Close dialog after sending
   }
 };
+
 </script>
 
 <template>
