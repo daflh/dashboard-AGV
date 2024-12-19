@@ -5,17 +5,20 @@ import StaticMapService from './services/StaticMapService';
 import AgentsCommService from './services/AgentsCommService';
 import DatabaseService from './services/DatabaseService';
 import DummyAgentsGenerator from './services/DummyAgentsGenerator';
+import IntegrityCommService from './services/IntegrityCommService';
 import { AgentCondition, AgentConfiguration, AgentsObj, AgentControlState } from "./models/agent";
 import { MapData } from "./models/map";
 import { isTokenValid } from './auth';
 import { convertMapToPng } from './utils/mapUtils';
 
 const USE_DUMMY_AGENTS = false; // for development & testing purpose
+const BYPASS_INTEGRITY = false;
 
 export default function startServices(httpServer: Server) {
   const webSocketService = new WebSocketService(httpServer);
   const staticMapService = new StaticMapService();
-  const agentsCommService = new AgentsCommService();
+  const integrityCommService = new IntegrityCommService(BYPASS_INTEGRITY);
+  const agentsCommService = new AgentsCommService(integrityCommService);
   const databaseService = new DatabaseService(); // Using Prisma-based DatabaseService
   const dummyAgentGen = new DummyAgentsGenerator();
 
@@ -42,6 +45,7 @@ export default function startServices(httpServer: Server) {
         } else {
           // if the agent's IP address has changed, connect to the new IP address
           if (agent.ipAddress !== agents[agent.id].ipAddress) {
+            agentsCommService.disconnectFromAgent(agent.id);
             agentsCommService.connectToAgent(agent);
           }
           // if the agent already exists, update (override) the data
@@ -49,6 +53,14 @@ export default function startServices(httpServer: Server) {
             ...agents[agent.id],
             ...agent,
           };
+        }
+      }
+
+      // disconnect and delete agents that are not in the up-to-date list
+      for (const agentId in agents) {
+        if (!agentsUpToDate.find((agent) => agent.id === parseInt(agentId))) {
+          agentsCommService.disconnectFromAgent(parseInt(agentId));
+          delete agents[agentId];
         }
       }
     } catch (error) {
@@ -199,23 +211,23 @@ export default function startServices(httpServer: Server) {
       }
     });
 
-// Create site request
-socket.on("site:create", async (newSite: { name: string }, callback) => {
-  try {
-    if (!newSite.name) throw new Error("Site name is required");
+    // Create site request
+    socket.on("site:create", async (newSite: { name: string }, callback) => {
+      try {
+        if (!newSite.name) throw new Error("Site name is required");
 
-    const site = await databaseService.createSite(newSite.name, 1);
-    callback({ success: true, site });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error creating site:", error.message);
-      callback({ success: false, message: error.message });
-    } else {
-      console.error("Unexpected error:", error);
-      callback({ success: false, message: "An unexpected error occurred" });
-    }
-  }
-});
+        const site = await databaseService.createSite(newSite.name, 1);
+        callback({ success: true, site });
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error creating site:", error.message);
+          callback({ success: false, message: error.message });
+        } else {
+          console.error("Unexpected error:", error);
+          callback({ success: false, message: "An unexpected error occurred" });
+        }
+      }
+    });
 
     // Send direction control data at 2 Hz
     setInterval(() => {
@@ -236,6 +248,11 @@ socket.on("site:create", async (newSite: { name: string }, callback) => {
 
     socket.on('agentCmd:targetPosition', (agentId: number, positionStr: string) => {
       agentsCommService.sendNavigationCmd(agentId, positionStr);
+    });
+
+    socket.on('staticMap:getAvailableMaps', async (cb: (mapNames: string[]) => void) => {
+      const mapNames = staticMapService.getAvailableMaps();
+      cb(mapNames);
     });
     
     socket.on('staticMap:request', async ({ mapName }: { mapName: string }) => {

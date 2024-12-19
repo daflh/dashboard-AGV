@@ -1,10 +1,19 @@
 import { EventEmitter } from 'events';
 import zlib from 'zlib';
 import AutoReconnectTCPClient from './AutoReconnectTCPClient';
+import IntegrityCommService from './IntegrityCommService';
 import { convert1DTo2DMap, fixMapRotation } from '../utils/mapUtils';
 // import { patch } from '../utils/bsdiff';
 import { AgentConfiguration, Quaternion } from '../models/agent';
 import { MapData } from '../models/map';
+
+interface AgentState {
+  id: number;
+  ipAddress: string;
+  position: [number, number] | null;
+  isConnected: boolean;
+  tcpSocket: AutoReconnectTCPClient | null;
+}
 
 class AgentsCommService {
   static GENERAL_PORT = 48100;
@@ -15,16 +24,43 @@ class AgentsCommService {
 
   static MSG_HEAD = 'R';
 
+  private agentsState: AgentState[]
+  private itgCommService: IntegrityCommService;
   private eventEmitter: EventEmitter;
 
-  constructor() {
+  constructor(itgCommService: IntegrityCommService) {
+    this.agentsState = [];
+    this.itgCommService = itgCommService;
     this.eventEmitter = new EventEmitter();
   }
 
   public connectToAgent(agent: AgentConfiguration) {
-    if (agent.ipAddress) {
-      console.log(`AgentsCommService: Starting TCP clients for ${agent.name} (${agent.ipAddress})`);
-      this.startCommClient(agent.id, agent.ipAddress);
+    if (!agent.ipAddress) return;
+
+    if (!this.agentsState.find((a) => a.id === agent.id)) {
+      this.agentsState.push({
+        id: agent.id,
+        ipAddress: agent.ipAddress,
+        position: null,
+        isConnected: false,
+        tcpSocket: null
+      });
+    } else {
+      const agentState = this.agentsState.find((a) => a.id === agent.id);
+      agentState!.ipAddress = agent.ipAddress;
+    }
+
+    console.log(`AgentsCommService: Starting TCP client for ${agent.name} (${agent.ipAddress})`);
+    this.startCommClient(agent.id, agent.ipAddress);
+  }
+
+  public disconnectFromAgent(agentIdOrIpAddr: number | string) {
+    const agentState = this.agentsState.find((a) => a.id === agentIdOrIpAddr || a.ipAddress === agentIdOrIpAddr);
+    if (agentState) {
+      console.log(`AgentsCommService: Disconnecting TCP client for agent ${agentState.id} (${agentState.ipAddress})`);
+      agentState.tcpSocket?.disconnect();
+      agentState.tcpSocket = null;
+      agentState.isConnected = false;
     }
   }
 
@@ -45,28 +81,24 @@ class AgentsCommService {
   }
 
   private startCommClient(agentId: number, serverIp: string) {
+    const agentState = this.agentsState.find((a) => a.id === agentId)!;
     const generalTcpClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.GENERAL_PORT);
     // const statusDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.STATUS_DATA_PORT);
     // const mapDataClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.MAP_DATA_PORT);
     // const controlCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.CONTROL_CMD_PORT);
     // const navigationCmdClient = new AutoReconnectTCPClient(serverIp, AgentsCommService.NAVIGATION_CMD_PORT);
 
-    const portStatus = {
-      data: false,
-      map: false,
-      control: false,
-      navigation: false
-    };
+    agentState.tcpSocket = generalTcpClient;
 
     generalTcpClient.on('connect', () => {
       // console.log('connected to general tcp client');
-      portStatus.data = true;
       this.eventEmitter.emit('statusData', agentId, { status: 'idle' });
+      agentState.isConnected = true;
     });
 
     generalTcpClient.on('close', () => {
-      portStatus.data = false;
       this.eventEmitter.emit('statusData', agentId, { status: 'offline' });
+      agentState.isConnected = false;
     });
 
     let receivedBuf = Buffer.alloc(0);
@@ -81,30 +113,39 @@ class AgentsCommService {
       if (expectedLength === 0) {
         if (receivedBuf.length >= 6 && receivedBuf[0] === AgentsCommService.MSG_HEAD.charCodeAt(0)) {
           expectedLength = receivedBuf.readUintBE(2, 3);
-          // remove msg header and checksum
-          receivedBuf = receivedBuf.subarray(5, -2);
+          // choose to use checksum or not
+          // receivedBuf = receivedBuf.subarray(5, -2);
+          receivedBuf = receivedBuf.subarray(5);
         }
       }
 
       // If we have enough data for the full message
       if (expectedLength > 0 && receivedBuf.length >= expectedLength) {
         try {
+          // TODO: connect to integrity module
+          // const decryptedMsg = this.itgCommService.decryptData()
           const rawMsg = zlib.inflateSync(receivedBuf).toString('utf-8');
           const msg = JSON.parse(rawMsg.toString());
           const msgPayload = msg.payload;
+          const agentPosition: [number, number] | null = msgPayload?.pose?.pose?.position
+            ? [msgPayload.pose.pose.position.x, msgPayload.pose.pose.position.y]
+            : null;
+          // console.log('masuk data');
           // console.log(msgPayload);
-          // console.log(zlib.inflateSync(receivedBuf).length, 'down to', receivedBuf.length)
+          // console.log(rawMsg.length, 'down to', receivedBuf.length)
+
+          // TODO: check if msg agent id is the same as agentId
 
           this.eventEmitter.emit('statusData', agentId, {
             linearVelo: msgPayload?.velocity?.linear?.x ?? 0,
             angularVelo: msgPayload?.velocity?.angular?.z ?? 0,
-            heading: msgPayload?.pose?.orientation
-              ? quaternionToYaw(msgPayload.pose.orientation)
+            heading: msgPayload?.pose.pose?.orientation
+              ? quaternionToYaw(msgPayload.pose.pose.orientation)
               : 0,
-            position: msgPayload?.pose?.position
-              ? [msgPayload.pose.position.x, msgPayload.pose.position.y]
-              : null
+            position: agentPosition
           });
+
+          agentState.position = agentPosition;
 
           // only if map data is available
           if (msgPayload.map?.data?.length) {
@@ -153,20 +194,23 @@ class AgentsCommService {
           angular_z: angularZ
         }
       };
-      const buffToSend = packMessage(JSON.stringify(controlData));
-      generalTcpClient.write(buffToSend);
+      // console.log(controlData);
+      generalTcpClient.write(packMessage(JSON.stringify(controlData)));
     });
 
     this.eventEmitter.on('navigationCmd', (cmdAgentId: number, navigationStr: string) => {
       if (agentId !== cmdAgentId) return;
       const navs = navigationStr.split(',');
       const navData = {
-        command: 'coordinate',
-        coordinate_x: parseFloat(navs[0]),
-        coordinate_y: parseFloat(navs[1]),
-        heading: navs[2] ? parseFloat(navs[2]) : 0
+        type: 'command_navigate',
+        payload: {
+          x: parseFloat(navs[0]),
+          y: parseFloat(navs[1]),
+          heading: navs[2] ? parseFloat(navs[2]) : 0
+        }
       };
-      generalTcpClient.write(JSON.stringify(navData));
+      // console.log(navData);
+      generalTcpClient.write(packMessage(JSON.stringify(navData)));
     });
 
     // let recvMapDataQueue = Buffer.alloc(0);
@@ -201,7 +245,9 @@ class AgentsCommService {
 
 function quaternionToYaw({ x, y, z, w }: Quaternion) {
   const yawInRadians = Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
-  const yawInDegrees = yawInRadians * (180 / Math.PI);
+  let yawInDegrees = yawInRadians * (180 / Math.PI);
+  yawInDegrees = -yawInDegrees; // invert yaw
+  if (yawInDegrees < 0) yawInDegrees += 360; // normalize to 0-360 deg
   return yawInDegrees;
 }
 

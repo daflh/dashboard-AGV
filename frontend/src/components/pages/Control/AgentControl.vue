@@ -57,11 +57,14 @@ function isValid(value: any) {
       </div>
       <div>Back</div>
     </div>
-    <h2 class="text-lg mb-4 font-medium">
-      Controlling <span class="font-semibold">{{ agent }}</span>
+    <h2 class="flex items-center text-lg mb-4 font-medium">
+      <div>
+        Controlling <span class="font-semibold">{{ agent }}</span>
+      </div>
       <Badge
-        v-show="agentData.status === 'offline'"
+        v-show="agentData?.status === 'offline'"
         value="Offline"
+        size="small"
         severity="danger"
         class="ml-2.5 !font-medium"
       ></Badge>
